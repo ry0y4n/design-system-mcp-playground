@@ -1,0 +1,12 @@
+[
+  { "name": "color.text.primary", "value": "#1A1A1A", "role": "本文の標準色" },
+  { "name": "color.text.secondary", "value": "#6B6B6B", "role": "補助テキスト・キャプション" },
+  { "name": "color.text.disabled", "value": "#B0B0B0", "role": "無効状態のテキスト" },
+  { "name": "color.background.base", "value": "#FFFFFF", "role": "ベース背景" },
+  { "name": "color.background.subtle", "value": "#F5F5F5", "role": "弱い強調・カード背景" },
+  { "name": "color.brand.primary", "value": "#0B5FFF", "role": "ブランドメインカラー / Primary ボタン" },
+  { "name": "color.brand.primaryHover", "value": "#0848C7", "role": "Primary ボタンの hover" },
+  { "name": "color.semantic.danger", "value": "#D92D20", "role": "エラー・削除" },
+  { "name": "color.semantic.success", "value": "#0F8A4F", "role": "成功・完了" },
+  { "name": "color.border.default", "value": "#E0E0E0", "role": "標準の境界線" }
+]

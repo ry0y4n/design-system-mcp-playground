@@ -1,0 +1,9 @@
+[
+  { "name": "spacing.0", "value": "0px", "description": "余白なし" },
+  { "name": "spacing.1", "value": "4px", "description": "アイコンとラベル間など最小単位" },
+  { "name": "spacing.2", "value": "8px", "description": "要素内の小さな余白" },
+  { "name": "spacing.3", "value": "12px", "description": "標準的な要素間" },
+  { "name": "spacing.4", "value": "16px", "description": "ブロック間の標準余白" },
+  { "name": "spacing.6", "value": "24px", "description": "セクション間" },
+  { "name": "spacing.8", "value": "32px", "description": "大きなセクション間" }
+]

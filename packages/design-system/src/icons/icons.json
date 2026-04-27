@@ -1,0 +1,22 @@
+{
+  "icons": [
+    {
+      "name": "plus",
+      "file": "plus.svg",
+      "tags": ["add", "create", "new"],
+      "description": "追加 / 新規作成を表すアイコン"
+    },
+    {
+      "name": "check",
+      "file": "check.svg",
+      "tags": ["done", "success", "complete"],
+      "description": "完了・チェックを表すアイコン"
+    },
+    {
+      "name": "search",
+      "file": "search.svg",
+      "tags": ["find", "lookup", "filter"],
+      "description": "検索を表すアイコン"
+    }
+  ]
+}

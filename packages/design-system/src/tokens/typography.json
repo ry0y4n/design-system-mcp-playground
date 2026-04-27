@@ -1,0 +1,7 @@
+[
+  { "name": "typography.heading.lg", "fontSize": "24px", "lineHeight": "32px", "fontWeight": 700, "description": "ページタイトル" },
+  { "name": "typography.heading.md", "fontSize": "20px", "lineHeight": "28px", "fontWeight": 700, "description": "セクション見出し" },
+  { "name": "typography.body.md", "fontSize": "14px", "lineHeight": "22px", "fontWeight": 400, "description": "本文標準" },
+  { "name": "typography.body.sm", "fontSize": "12px", "lineHeight": "18px", "fontWeight": 400, "description": "補助テキスト・キャプション" },
+  { "name": "typography.button.md", "fontSize": "14px", "lineHeight": "20px", "fontWeight": 600, "description": "ボタンラベル" }
+]

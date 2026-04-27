@@ -1,0 +1,7 @@
+[
+  { "name": "radius.none", "value": "0px", "description": "角丸なし" },
+  { "name": "radius.sm", "value": "4px", "description": "小さな要素 (Tag, Badge)" },
+  { "name": "radius.md", "value": "8px", "description": "標準 (Button, TextField)" },
+  { "name": "radius.lg", "value": "12px", "description": "Card, Dialog" },
+  { "name": "radius.full", "value": "9999px", "description": "Pill / Avatar" }
+]

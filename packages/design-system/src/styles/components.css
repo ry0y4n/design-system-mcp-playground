@@ -1,0 +1,116 @@
+/* ===== Button =====
+ * Maps the Button component's data attributes to design tokens.
+ * The component itself only emits data-variant / data-size / data-loading.
+ */
+button[data-variant] {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-2);
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  font-size: var(--font-size-button-md);
+  line-height: var(--line-height-button-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+
+button[data-variant]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+button[data-size="sm"] {
+  padding: var(--spacing-1) var(--spacing-3);
+}
+button[data-size="md"] {
+  padding: var(--spacing-2) var(--spacing-4);
+}
+button[data-size="lg"] {
+  padding: var(--spacing-3) var(--spacing-6);
+  font-size: 16px;
+  line-height: 24px;
+}
+
+button[data-variant="primary"] {
+  background: var(--color-brand-primary);
+  color: #fff;
+}
+button[data-variant="primary"]:hover:not(:disabled) {
+  background: var(--color-brand-primary-hover);
+}
+
+button[data-variant="secondary"] {
+  background: var(--color-background-base);
+  border-color: var(--color-border-default);
+  color: var(--color-text-primary);
+}
+button[data-variant="secondary"]:hover:not(:disabled) {
+  background: var(--color-background-subtle);
+}
+
+button[data-variant="danger"] {
+  background: var(--color-semantic-danger);
+  color: #fff;
+}
+button[data-variant="danger"]:hover:not(:disabled) {
+  filter: brightness(0.92);
+}
+
+/* ===== TextField =====
+ * Component renders <label><span/><input/><span/></label> and sets data-error on label.
+ */
+label[data-error],
+label:has(> input) {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-1);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-sm);
+  color: var(--color-text-secondary);
+}
+
+label:has(> input) > span:first-child {
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-body-md);
+  font-weight: 500;
+}
+
+label:has(> input) > input {
+  appearance: none;
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-background-base);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-body-md);
+  line-height: var(--line-height-body-md);
+  outline: none;
+  transition: border-color 120ms ease, box-shadow 120ms ease;
+}
+
+label:has(> input) > input:focus-visible {
+  border-color: var(--color-brand-primary);
+  box-shadow: 0 0 0 3px rgba(11, 95, 255, 0.16);
+}
+
+label:has(> input) > input:disabled {
+  background: var(--color-background-subtle);
+  color: var(--color-text-disabled);
+  cursor: not-allowed;
+}
+
+label[data-error] > input,
+label:has(> input[aria-invalid="true"]) > input {
+  border-color: var(--color-semantic-danger);
+}
+label[data-error] > input:focus-visible {
+  box-shadow: 0 0 0 3px rgba(217, 45, 32, 0.18);
+}
+
+label[data-error] > [role="alert"] {
+  color: var(--color-semantic-danger);
+}
