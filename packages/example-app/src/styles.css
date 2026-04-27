@@ -1,0 +1,96 @@
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  padding: var(--spacing-4) var(--spacing-6);
+  border-bottom: 1px solid var(--color-border-default);
+  background: var(--color-background-base);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: var(--font-size-heading-md);
+  line-height: var(--line-height-heading-md);
+}
+
+.app-header p {
+  margin: var(--spacing-1) 0 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-sm);
+}
+
+.app-main {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--spacing-6);
+  padding: var(--spacing-6);
+  max-width: 960px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+@media (min-width: 880px) {
+  .app-main {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+.card {
+  background: var(--color-background-base);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-6);
+}
+
+.card h2 {
+  margin: 0 0 var(--spacing-3);
+  font-size: var(--font-size-heading-md);
+  line-height: var(--line-height-heading-md);
+}
+
+.card p {
+  margin: 0 0 var(--spacing-3);
+  color: var(--color-text-secondary);
+}
+
+.prompt-block {
+  background: var(--color-background-subtle);
+  border-radius: var(--radius-md);
+  padding: var(--spacing-3) var(--spacing-4);
+  font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-md);
+  color: var(--color-text-primary);
+  white-space: pre-wrap;
+}
+
+.placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 240px;
+  border: 2px dashed var(--color-border-default);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-secondary);
+  text-align: center;
+  padding: var(--spacing-6);
+}
+
+.placeholder > p {
+  margin: 0;
+  max-width: 42em;
+  line-height: 1.7;
+}
+
+.tool-list {
+  margin: 0;
+  padding-left: var(--spacing-4);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-body-sm);
+  line-height: var(--line-height-body-md);
+}
