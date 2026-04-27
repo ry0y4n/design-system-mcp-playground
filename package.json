@@ -1,0 +1,20 @@
+{
+  "name": "design-system-mcp-playground",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Sample design system + MCP server, inspired by Ubie UI MCP.",
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces --if-present",
+    "build:mcp": "npm run build --workspace @design-system-mcp-playground/mcp-server",
+    "start:mcp": "npm run start --workspace @design-system-mcp-playground/mcp-server",
+    "inspect:mcp": "npm run inspect --workspace @design-system-mcp-playground/mcp-server",
+    "storybook": "npm run storybook --workspace @design-system-mcp-playground/design-system",
+    "build-storybook": "npm run build-storybook --workspace @design-system-mcp-playground/design-system"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3"
+  }
+}
