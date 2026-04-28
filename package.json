@@ -8,17 +8,18 @@
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
-    "build:mcp": "npm run build --workspace @design-system-mcp-playground/mcp-server",
-    "start:mcp": "npm run start --workspace @design-system-mcp-playground/mcp-server",
-    "inspect:mcp": "npm run inspect --workspace @design-system-mcp-playground/mcp-server",
+    "build:read-mcp": "npm run build --workspace @design-system-mcp-playground/ds-read-mcp",
+    "start:read-mcp": "npm run start --workspace @design-system-mcp-playground/ds-read-mcp",
+    "inspect:read-mcp": "npm run inspect --workspace @design-system-mcp-playground/ds-read-mcp",
+    "build:author-mcp": "npm run build --workspace @design-system-mcp-playground/ds-author-mcp",
+    "start:author-mcp": "npm run start --workspace @design-system-mcp-playground/ds-author-mcp",
+    "inspect:author-mcp": "npm run inspect --workspace @design-system-mcp-playground/ds-author-mcp",
     "storybook": "npm run storybook --workspace @design-system-mcp-playground/design-system",
     "build-storybook": "npm run build-storybook --workspace @design-system-mcp-playground/design-system",
     "ds:validate": "npm run validate --workspace @design-system-mcp-playground/brand-brief --",
     "ds:approve": "npm run approve --workspace @design-system-mcp-playground/brand-brief --",
     "ds:synth": "npm run synth --workspace @design-system-mcp-playground/ds-author-mcp --",
     "ds:check": "npm run check --workspace @design-system-mcp-playground/ds-author-mcp --",
-    "build:author-mcp": "npm run build --workspace @design-system-mcp-playground/ds-author-mcp",
-    "start:author-mcp": "npm run start --workspace @design-system-mcp-playground/ds-author-mcp",
     "sync:vscode": "node scripts/sync-vscode.mjs"
   },
   "devDependencies": {

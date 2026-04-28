@@ -1,16 +1,16 @@
 {
-  "name": "@design-system-mcp-playground/mcp-server",
+  "name": "@design-system-mcp-playground/ds-read-mcp",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "bin": {
-    "design-system-mcp-playground": "dist/index.js"
+    "ds-read-mcp": "dist/index.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "dev": "tsc -p tsconfig.json --watch",
-    "inspect": "npx -y @modelcontextprotocol/inspector node dist/index.js"
+    "inspect": "CLIENT_PORT=6274 SERVER_PORT=6277 npx -y @modelcontextprotocol/inspector node dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

@@ -25,22 +25,22 @@ const promptsDir = join(repoRoot, ".github/prompts");
 const vscodeMcp = join(repoRoot, ".vscode/mcp.json");
 
 // Map MCP tool names to the server they live on. Source of truth: the registerTool
-// calls in packages/{ds-author-mcp,mcp-server}/src/.
+// calls in packages/{ds-author-mcp,ds-read-mcp}/src/.
 const SERVER_OF_TOOL = {
   // ds-author server (writes proposals only — no direct DS edits)
   propose_tokens: "ds-author",
   propose_component: "ds-author",
   list_proposals: "ds-author",
-  // design-system server (read-only introspection of generated + legacy DS)
-  get_briefs: "design-system",
-  get_components: "design-system",
-  get_component: "design-system",
-  get_color_tokens: "design-system",
-  get_radius_tokens: "design-system",
-  get_typography_tokens: "design-system",
-  get_spacing_tokens: "design-system",
-  get_icons: "design-system",
-  explain_token: "design-system",
+  // ds-read server (read-only introspection of generated + legacy DS)
+  get_briefs: "ds-read",
+  get_components: "ds-read",
+  get_component: "ds-read",
+  get_color_tokens: "ds-read",
+  get_radius_tokens: "ds-read",
+  get_typography_tokens: "ds-read",
+  get_spacing_tokens: "ds-read",
+  get_icons: "ds-read",
+  explain_token: "ds-read",
 };
 
 // Map CLI built-in tool names to VS Code tool sets / tools. We err on the safe
@@ -140,20 +140,28 @@ function ensureDir(p) {
 }
 
 function syncMcpJson() {
-  // Idempotently add the ds-author server so VS Code Copilot Chat can call
-  // propose_tokens / propose_component.
+  // Idempotently ensure both MCP servers are present in .vscode/mcp.json so
+  // VS Code Copilot Chat can call them. ds-read = read-only introspection,
+  // ds-author = propose_tokens / propose_component.
   const cfg = JSON.parse(readFileSync(vscodeMcp, "utf8"));
   cfg.servers ||= {};
-  const desired = {
-    type: "stdio",
-    command: "node",
-    args: ["${workspaceFolder}/packages/ds-author-mcp/dist/index.js"],
-  };
-  const before = JSON.stringify(cfg.servers["ds-author"]);
-  cfg.servers["ds-author"] = desired;
-  const after = JSON.stringify(cfg.servers["ds-author"]);
+  const targets = [
+    { name: "ds-read",   path: "packages/ds-read-mcp/dist/index.js" },
+    { name: "ds-author", path: "packages/ds-author-mcp/dist/index.js" },
+  ];
+  const changed = [];
+  for (const t of targets) {
+    const desired = {
+      type: "stdio",
+      command: "node",
+      args: [`\${workspaceFolder}/${t.path}`],
+    };
+    const before = JSON.stringify(cfg.servers[t.name]);
+    cfg.servers[t.name] = desired;
+    if (before !== JSON.stringify(cfg.servers[t.name])) changed.push(t.name);
+  }
   writeFileSync(vscodeMcp, JSON.stringify(cfg, null, 2) + "\n");
-  return { changed: before !== after, server: "ds-author" };
+  return { changed: changed.length > 0, servers: targets.map((t) => t.name) };
 }
 
 function main() {
@@ -171,8 +179,8 @@ function main() {
   }
   console.log(
     mcp.changed
-      ? `  ✓ .vscode/mcp.json updated (server: ${mcp.server})`
-      : `  · .vscode/mcp.json already up-to-date (server: ${mcp.server})`,
+      ? `  ✓ .vscode/mcp.json updated (servers: ${mcp.servers.join(", ")})`
+      : `  · .vscode/mcp.json already up-to-date (servers: ${mcp.servers.join(", ")})`,
   );
 }
 

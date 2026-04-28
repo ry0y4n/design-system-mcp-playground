@@ -1,10 +1,10 @@
 {
   "servers": {
-    "design-system": {
+    "ds-read": {
       "type": "stdio",
       "command": "node",
       "args": [
-        "${workspaceFolder}/packages/mcp-server/dist/index.js"
+        "${workspaceFolder}/packages/ds-read-mcp/dist/index.js"
       ]
     },
     "ds-author": {

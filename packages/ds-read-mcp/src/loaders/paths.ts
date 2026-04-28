@@ -1,7 +1,7 @@
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
 
-// dist/loaders/paths.js → repo/packages/mcp-server/dist/loaders/paths.js
+// dist/loaders/paths.js → repo/packages/ds-read-mcp/dist/loaders/paths.js
 // design-system source: repo/packages/design-system/src
 const here = dirname(fileURLToPath(import.meta.url));
 

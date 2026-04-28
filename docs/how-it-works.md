@@ -66,10 +66,10 @@ AI がどのツールをいつ呼ぶかは、**ツールの description（自然
 
 ## 6. クライアントへの導入手順（短縮版）
 
-1. `packages/mcp-server/` を持ち込み、**`loaders/paths.ts` の参照先**を自社デザインシステムのディレクトリに変更
+1. `packages/ds-read-mcp/` を持ち込み、**`loaders/paths.ts` の参照先**を自社デザインシステムのディレクトリに変更
 2. **コンポーネントの README** を本リポジトリの形式（`## Summary` / `## Tags` / `## Props` / `## Examples` / `## Related` / `## Design Tokens Used`）で整備
 3. **トークンを JSON 化**（既に JSON ならそのまま、TS のみなら build スクリプトで生成）
-4. `npm run build:mcp` → MCP クライアントの設定（VS Code なら `.vscode/mcp.json`）に登録
+4. `npm run build:read-mcp` → MCP クライアントの設定（VS Code なら `.vscode/mcp.json`）に登録
 
 > 補足: Storybook は導入しなくても MCP は動きます。ただし「AI が生成した UI をデザイン通りか見比べる」基準があると検証しやすいので、本リポジトリでは併設しています。
 

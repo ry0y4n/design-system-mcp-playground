@@ -14,7 +14,8 @@
     "check": "node dist/bin/ds-check.js",
     "check:schema": "node dist/bin/ds-check-schema.js",
     "check:contrast": "node dist/bin/ds-check-contrast.js",
-    "synth": "node dist/bin/ds-synth.js"
+    "synth": "node dist/bin/ds-synth.js",
+    "inspect": "CLIENT_PORT=6284 SERVER_PORT=6287 npx -y @modelcontextprotocol/inspector node dist/index.js"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

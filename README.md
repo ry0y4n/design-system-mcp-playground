@@ -11,7 +11,7 @@ Ubie の [デザインシステムを MCP サーバー化した話](https://zenn
 
 | モード             | 入力                                     | 出力                                          | 主な MCP                           |
 | ------------------ | ---------------------------------------- | --------------------------------------------- | ---------------------------------- |
-| **A. 読むモード**  | 「このフォームを作って」                 | DS 準拠の React コード                        | `mcp-server` (ds-read)             |
+| **A. 読むモード**  | 「このフォームを作って」                 | DS 準拠の React コード                        | `ds-read-mcp`                      |
 | **B. 作るモード**  | Brand Brief（設計思想・ブランドカラー）  | デザインシステム（tokens / Button / 来歴メタ） | `ds-author-mcp` + 人間の approve   |
 
 A は元記事と同じ「AI に既存 DS を正確に渡す」体験。B はその DS 自体を AI に Brief から生成させる新しい体験で、**Spec-driven**（specify → plan → tasks → implement）と **決定論的 synth** と **人間専用の approve ゲート** を組み合わせて、AI に「危険なレベルの自由度」を与えずに DS を立ち上げられることを示します。
@@ -32,7 +32,7 @@ flowchart LR
 
     subgraph A["A: 読むモード"]
         direction TB
-        Reader["mcp-server<br/>get_components<br/>get_*_tokens<br/>get_icons<br/>explain_token (来歴)"]
+        Reader["ds-read-mcp<br/>get_components<br/>get_*_tokens<br/>get_icons<br/>explain_token (来歴)"]
     end
 
     DS[("packages/design-system/<br/>(実体)")]
@@ -59,7 +59,7 @@ design-system-mcp-playground/
 │   │   │   └── nova/
 │   │   └── .storybook/
 │   │
-│   ├── mcp-server/             # ★ ds-read MCP（Copilot に DS を読ませる側）
+│   ├── ds-read-mcp/            # ★ ds-read MCP（Copilot に DS を読ませる側）
 │   │   └── src/tools/          # get_components / get_*_tokens / explain_token …
 │   │
 │   ├── ds-author-mcp/          # ★ ds-author MCP（Brief → 提案を書く側）
@@ -102,7 +102,7 @@ npm install
 npm run build           # 全 workspace をビルド
 ```
 
-これで `packages/{mcp-server,ds-author-mcp}/dist/` が用意され、VS Code で開けば両 MCP が Copilot Chat (Agent モード) に自動認識されます。
+これで `packages/{ds-read-mcp,ds-author-mcp}/dist/` が用意され、VS Code で開けば両 MCP が Copilot Chat (Agent モード) に自動認識されます。
 
 ### A. 既存 DS を AI に使わせる（元記事の体験）
 
@@ -124,12 +124,14 @@ AI が `get_components` → `get_component { name: "Button" }` → `get_color_to
 
 ### B. Brief から DS を AI に作らせる（新モード）
 
-事前準備として MCP Inspector を使うのが一番早いです:
+事前準備として MCP Inspector を使うのが一番早いです。両 MCP を別ターミナルで並行起動できます（ポートは衝突しないよう分離済み: read=6274/6277, author=6284/6287）:
 
 ```bash
-npm run inspect:mcp                    # ds-read 側
-# 別タブで:
-node packages/ds-author-mcp/dist/index.js | npx @modelcontextprotocol/inspector
+# ターミナル 1: ds-read を Inspector で叩く
+npm run inspect:read-mcp
+
+# ターミナル 2: ds-author を Inspector で叩く
+npm run inspect:author-mcp
 ```
 
 #### B-1. CLI で動かす（Copilot CLI / `gh copilot`）
@@ -177,7 +179,7 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 
 ## 3. 提供する MCP ツール一覧
 
-### 3.1 `mcp-server` — ds-read（読むモード）
+### 3.1 `ds-read-mcp` — ds-read（読むモード）
 
 | Tool                    | 入力              | 役割                                                                                                  |
 | ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
@@ -232,7 +234,7 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 | ------------- | ------------------------------------------------- | -------------------------------------------------------------- |
 | **Skill**     | 「何を、どの順で」やるかの workflow（自然言語）   | `.github/skills/ds-{specify,plan,tasks,implement}/SKILL.md`    |
 | **Custom Agent** | AI に許可するツール集合（権限境界）             | `.github/agents/design-system-architect.md` (`tools:` allowlist) |
-| **MCP**       | 構造化された I/O（read / propose / explain）      | `mcp-server`, `ds-author-mcp`                                  |
+| **MCP**       | 構造化された I/O（read / propose / explain）      | `ds-read-mcp`, `ds-author-mcp`                                  |
 | **Hooks**     | 横断的な検証・ログ・auto-repair                   | `.github/extensions/ds-guardrail/extension.mjs` (postToolUse)  |
 | **Human**     | 反映の最終ゲート（CI と同等の役割）               | `npm run ds:approve` (`packages/brand-brief/bin/ds-approve.mjs`) |
 
@@ -245,9 +247,10 @@ Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生
 | コマンド                    | 役割                                                                                          |
 | --------------------------- | --------------------------------------------------------------------------------------------- |
 | `npm run build`             | 全 workspace をビルド                                                                         |
-| `npm run build:mcp`         | ds-read MCP のみビルド                                                                        |
+| `npm run build:read-mcp`    | ds-read MCP のみビルド                                                                        |
 | `npm run build:author-mcp`  | ds-author MCP のみビルド                                                                      |
-| `npm run inspect:mcp`       | MCP Inspector で ds-read を対話的にテスト                                                     |
+| `npm run inspect:read-mcp`  | MCP Inspector で ds-read を対話的にテスト（port 6274/6277）                                   |
+| `npm run inspect:author-mcp`| MCP Inspector で ds-author を対話的にテスト（port 6284/6287、read と並行起動可）              |
 | `npm run storybook`         | デザインシステムの公式見本を起動                                                              |
 | `npm run ds:validate -- <brief.yaml>` | Brief を schema validation                                                          |
 | `npm run ds:synth -- <brief.yaml>`    | Brief から token を合成（CLI 単体実行）                                            |
@@ -281,7 +284,7 @@ Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生
 
 最小構成（A モードのみ移植）なら 3 ステップ:
 
-1. `packages/mcp-server/` をコピー
+1. `packages/ds-read-mcp/` をコピー
 2. `loaders/paths.ts` の参照先を自社の `tokens` / `components` / `icons` に向ける
 3. コンポーネントごとに `README.md` を整備（このリポの Button/TextField/Stack をテンプレに）
 
