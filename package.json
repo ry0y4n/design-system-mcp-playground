@@ -18,7 +18,8 @@
     "ds:synth": "npm run synth --workspace @design-system-mcp-playground/ds-author-mcp --",
     "ds:check": "npm run check --workspace @design-system-mcp-playground/ds-author-mcp --",
     "build:author-mcp": "npm run build --workspace @design-system-mcp-playground/ds-author-mcp",
-    "start:author-mcp": "npm run start --workspace @design-system-mcp-playground/ds-author-mcp"
+    "start:author-mcp": "npm run start --workspace @design-system-mcp-playground/ds-author-mcp",
+    "sync:vscode": "node scripts/sync-vscode.mjs"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

@@ -6,6 +6,13 @@
       "args": [
         "${workspaceFolder}/packages/mcp-server/dist/index.js"
       ]
+    },
+    "ds-author": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "${workspaceFolder}/packages/ds-author-mcp/dist/index.js"
+      ]
     }
   }
 }
