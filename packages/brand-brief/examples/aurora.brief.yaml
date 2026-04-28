@@ -1,0 +1,49 @@
+meta:
+  name: Aurora
+  slug: aurora
+  version: 0.1.0
+  author: example
+
+philosophy:
+  mission: 夜の集中を支える、静かで温度のあるノートアプリ。
+  principles:
+    - ユーザーの集中を奪わない（控えめなコントラスト、強い色は要所だけ）
+    - 暗所で長時間使っても疲れない（dark first、ただし light も完全サポート）
+    - 行動を止めない（クリック数より「迷い時間」を減らす）
+  antiPrinciples:
+    - 装飾のための装飾
+    - 通知で関心を奪う
+
+brand:
+  colors:
+    primarySeed: "#5B7FFF"
+    accentSeed: "#FFB86B"
+    neutralBase: cool
+  typography:
+    fontStackPreference: humanist-sans
+    scaleRatio: 1.25
+  spacingScale: normal
+  radiusScale: soft
+  tone:
+    formality: neutral
+    energy: calm
+    voice: 落ち着いた、書き手の隣にいるような声色。
+
+audience:
+  primary: 夜にメモを書く社会人（25–40 歳、知的労働）
+  secondary: ライター・研究者
+  accessibility:
+    wcagLevel: AA
+    darkMode: true
+    reducedMotion: true
+
+constraints:
+  mustHave:
+    - dark mode は light と同等の品質
+    - キーボード操作のみで全機能到達可能
+  mustNot:
+    - フラッシュするアニメーション
+    - 強い赤を success/info に使う
+  references:
+    - https://linear.app
+    - Notion

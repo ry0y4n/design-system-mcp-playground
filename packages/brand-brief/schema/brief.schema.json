@@ -1,0 +1,139 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "BrandBrief",
+  "description": "デザインシステム生成パイプラインの入力。設計思想・ブランド属性・トーンを宣言する。",
+  "type": "object",
+  "required": ["meta", "philosophy", "brand", "audience", "constraints"],
+  "additionalProperties": false,
+  "properties": {
+    "meta": {
+      "type": "object",
+      "required": ["name", "version"],
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "slug": { "type": "string", "pattern": "^[a-z0-9][a-z0-9-]*$" },
+        "version": { "type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "author": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+
+    "philosophy": {
+      "type": "object",
+      "description": "プロダクトの根本にある設計思想。後段の synth エンジンに seed 情報を与える。",
+      "required": ["mission", "principles"],
+      "properties": {
+        "mission": { "type": "string", "minLength": 1, "maxLength": 280 },
+        "principles": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 7,
+          "items": { "type": "string", "minLength": 1, "maxLength": 140 }
+        },
+        "antiPrinciples": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 140 }
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "brand": {
+      "type": "object",
+      "description": "色・タイポ・余白などのシード値。トークン値は synth で決定論的に展開する。",
+      "required": ["colors", "tone"],
+      "properties": {
+        "colors": {
+          "type": "object",
+          "required": ["primarySeed"],
+          "properties": {
+            "primarySeed": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "secondarySeed": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "accentSeed": { "type": "string", "pattern": "^#[0-9a-fA-F]{6}$" },
+            "neutralBase": {
+              "type": "string",
+              "enum": ["cool", "neutral", "warm"],
+              "default": "neutral"
+            }
+          },
+          "additionalProperties": false
+        },
+        "typography": {
+          "type": "object",
+          "properties": {
+            "fontStackPreference": {
+              "type": "string",
+              "enum": ["geometric-sans", "humanist-sans", "neo-grotesque", "serif", "system"],
+              "default": "system"
+            },
+            "scaleRatio": { "type": "number", "enum": [1.125, 1.2, 1.25, 1.333], "default": 1.25 }
+          },
+          "additionalProperties": false
+        },
+        "spacingScale": {
+          "type": "string",
+          "enum": ["tight", "normal", "spacious"],
+          "default": "normal"
+        },
+        "radiusScale": {
+          "type": "string",
+          "enum": ["sharp", "soft", "round"],
+          "default": "soft"
+        },
+        "tone": {
+          "type": "object",
+          "required": ["formality", "energy"],
+          "properties": {
+            "formality": { "type": "string", "enum": ["casual", "neutral", "formal"] },
+            "energy": { "type": "string", "enum": ["calm", "balanced", "energetic"] },
+            "voice": { "type": "string", "maxLength": 280 }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "audience": {
+      "type": "object",
+      "required": ["primary"],
+      "properties": {
+        "primary": { "type": "string", "minLength": 1, "maxLength": 280 },
+        "secondary": { "type": "string", "maxLength": 280 },
+        "accessibility": {
+          "type": "object",
+          "properties": {
+            "wcagLevel": { "type": "string", "enum": ["AA", "AAA"], "default": "AA" },
+            "darkMode": { "type": "boolean", "default": true },
+            "reducedMotion": { "type": "boolean", "default": true }
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    },
+
+    "constraints": {
+      "type": "object",
+      "description": "してはいけないこと・必ず守ること。",
+      "required": ["mustHave"],
+      "properties": {
+        "mustHave": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 280 }
+        },
+        "mustNot": {
+          "type": "array",
+          "items": { "type": "string", "maxLength": 280 }
+        },
+        "references": {
+          "type": "array",
+          "description": "参考にしたいデザインシステム / プロダクトの URL や名前。",
+          "items": { "type": "string", "maxLength": 280 }
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

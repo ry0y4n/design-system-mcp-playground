@@ -1,0 +1,32 @@
+{
+  "name": "@design-system-mcp-playground/ds-author-mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Deterministic token synthesis + validators + MCP server (propose_*) for Brief-driven design system authoring.",
+  "bin": {
+    "ds-author-mcp": "dist/index.js",
+    "ds-check": "dist/bin/ds-check.js"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "check": "node dist/bin/ds-check.js",
+    "check:schema": "node dist/bin/ds-check-schema.js",
+    "check:contrast": "node dist/bin/ds-check-contrast.js",
+    "synth": "node dist/bin/ds-synth.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.0.4",
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "culori": "^4.0.1",
+    "yaml": "^2.6.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@types/culori": "^2.1.1",
+    "@types/node": "^22.9.0",
+    "typescript": "^5.6.3"
+  }
+}

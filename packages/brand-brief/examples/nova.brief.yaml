@@ -1,0 +1,48 @@
+meta:
+  name: Nova
+  slug: nova
+  version: 0.1.0
+  author: example
+
+philosophy:
+  mission: 製造現場で誤操作なく素早く決断できる、堅牢で機敏な業務アプリ。
+  principles:
+    - 1 タップを最小化する（業務効率最優先）
+    - 状態は視覚的にすぐ判別できる（誤操作の即時検知）
+    - 強いコントラストで明所視認性を担保
+  antiPrinciples:
+    - 過剰な余白による画面密度の低下
+    - 微妙なグラデーションや影への依存
+
+brand:
+  colors:
+    primarySeed: "#C0392B"
+    accentSeed: "#F4D03F"
+    neutralBase: warm
+  typography:
+    fontStackPreference: neo-grotesque
+    scaleRatio: 1.2
+  spacingScale: tight
+  radiusScale: sharp
+  tone:
+    formality: formal
+    energy: energetic
+    voice: 簡潔で要点先出し、業務マニュアル調。
+
+audience:
+  primary: 工場・倉庫オペレーター（手袋着用、明所、立ち作業）
+  secondary: 監督者・管理者
+  accessibility:
+    wcagLevel: AA
+    darkMode: false
+    reducedMotion: true
+
+constraints:
+  mustHave:
+    - 大きめのタップ領域（密度が高くてもボタンは押し誤らない）
+    - エラーは赤＋アイコン＋テキストで冗長に
+  mustNot:
+    - hover に依存した操作（タッチ環境で発火しない）
+  references:
+    - SAP Fiori
+    - Honeywell Operator UI

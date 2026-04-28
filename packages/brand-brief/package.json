@@ -1,0 +1,19 @@
+{
+  "name": "@design-system-mcp-playground/brand-brief",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Brand Brief schema, examples, and approve CLI (human-only gate).",
+  "bin": {
+    "ds-approve": "./bin/ds-approve.mjs"
+  },
+  "scripts": {
+    "approve": "node ./bin/ds-approve.mjs",
+    "validate": "node ./bin/ds-validate.mjs"
+  },
+  "dependencies": {
+    "ajv": "^8.17.1",
+    "ajv-formats": "^3.0.1",
+    "yaml": "^2.6.0"
+  }
+}
