@@ -1,209 +1,305 @@
 # design-system-mcp-playground
 
-Ubie の [デザインシステムを MCP サーバー化した話](https://zenn.dev/ubie_dev/articles/f927aaff02d618) の **学習用サンプル**。React + TypeScript で書かれた小さなデザインシステム（コンポーネント / デザイントークン / アイコン）を題材に、それを **MCP サーバー** 化して **GitHub Copilot Chat (VS Code)** などの AI コーディングアシスタントに正確なコンテキストとして渡す、という一連の流れを動く形で示します。
-
-> **このリポジトリのゴール**
->
-> 1. なぜ MCP がデザインシステム連携の正解になり得るのかを理解する
-> 2. **同じ仕組みを自社のデザインシステムに導入する手順を、コードレベルで把握する**
-> 3. クライアントに「動く例＋導入ステップ」として提示する
+**「設計思想・ブランドカラー → デザインシステム」を AI（GitHub Copilot）に作らせる PoC リポジトリ**。
+Ubie の [デザインシステムを MCP サーバー化した話](https://zenn.dev/ubie_dev/articles/f927aaff02d618) の学習用サンプルから出発し、その先のテーマ「**じゃあ、その元になるデザインシステム自体を AI でどう作るか**」までを一通り動く形でカバーします。
 
 ---
 
-## 1. 何が嬉しいのか（記事のおさらい）
+## 0. このリポジトリは何をするのか（30 秒）
 
-従来、AI に「うちのデザインシステムでこのフォームを作って」と頼むには、以下のような工夫が必要でした:
+このリポジトリには **2 つの体験** が同居しています:
 
-- Copilot の custom instructions にデザインシステムの Web サイトを読み込ませる
-- `node_modules/` 内のコンポーネント実装を探させる
+| モード             | 入力                                     | 出力                                          | 主な MCP                           |
+| ------------------ | ---------------------------------------- | --------------------------------------------- | ---------------------------------- |
+| **A. 読むモード**  | 「このフォームを作って」                 | DS 準拠の React コード                        | `mcp-server` (ds-read)             |
+| **B. 作るモード**  | Brand Brief（設計思想・ブランドカラー）  | デザインシステム（tokens / Button / 来歴メタ） | `ds-author-mcp` + 人間の approve   |
 
-しかしどちらも、**Props・トークン・アイコンといった構造化された情報**を AI に正確に渡せず、出力精度が安定しませんでした。
+A は元記事と同じ「AI に既存 DS を正確に渡す」体験。B はその DS 自体を AI に Brief から生成させる新しい体験で、**Spec-driven**（specify → plan → tasks → implement）と **決定論的 synth** と **人間専用の approve ゲート** を組み合わせて、AI に「危険なレベルの自由度」を与えずに DS を立ち上げられることを示します。
 
-**MCP (Model Context Protocol)** は、AI 側が必要なときに必要な情報を **「ツール呼び出し」として能動的に取得できる**仕組みです。デザインシステム MCP を 1 つ用意しておくだけで:
+```
+                      [Brief YAML]                              [example-app]
+                          │                                          │
+                          ▼  (B: 作るモード)                         │  (A: 読むモード)
+   ds-specify → ds-plan → ds-tasks → ds-implement                   │
+   （対話で Brief 収集 → 計画 → タスク化 → 提案生成）                │
+                          │                                          │
+                          ▼                                          ▼
+              ┌───────────────────────┐                  ┌────────────────────┐
+              │  ds-author-mcp        │  proposes →     │  mcp-server        │
+              │  propose_tokens       │   ┌──────┐      │  get_components    │
+              │  propose_component    │ → │HUMAN │ →    │  get_*_tokens      │
+              │  (deterministic synth │   │approv│      │  get_icons         │
+              │   + WCAG validators)  │   └──────┘      │  explain_token  ←  │ 来歴
+              └───────────────────────┘     ↓            └────────────────────┘
+                                  packages/design-system/  (実体)
+```
 
-- Copilot が prompt に応じて `get_components` → `get_component(name)` → `get_color_tokens` … と自動で呼び出して
-- 自社デザインシステムに**準拠した**コードを出力する
+---
 
-ようになります。ドキュメントを書く側の整備（コンポーネント README やトークン定義）の価値が、そのまま AI 体験の品質につながります。
-
-## 2. 構成
+## 1. リポジトリ構成
 
 ```
 design-system-mcp-playground/
 ├── packages/
-│   ├── design-system/          # 題材: 自社デザインシステム相当
-│   │   ├── .storybook/         # Storybook 設定 (main.ts / preview.ts)
+│   ├── design-system/          # 題材デザインシステム（手書き + Brief から生成された両方を保持）
+│   │   ├── src/components/     # Button / TextField / Stack（元記事の手書き DS）
+│   │   ├── src/tokens/         # color/radius/typography/spacing.json
+│   │   ├── src/icons/          # *.svg + icons.json
+│   │   ├── src/generated/      # ds-author-mcp が生成した Brief 派生 DS
+│   │   │   ├── aurora/         # tokens.json + tokens.css + tokens.provenance.json + Button/
+│   │   │   └── nova/
+│   │   └── .storybook/
+│   │
+│   ├── mcp-server/             # ★ ds-read MCP（Copilot に DS を読ませる側）
+│   │   └── src/tools/          # get_components / get_*_tokens / explain_token …
+│   │
+│   ├── ds-author-mcp/          # ★ ds-author MCP（Brief → 提案を書く側）
 │   │   └── src/
-│   │       ├── components/{Button,TextField,Stack}/  # *.tsx + *.stories.tsx + README.md
-│   │       ├── tokens/         # color/radius/typography/spacing.json (+ TS) + Tokens.stories.tsx
-│   │       ├── icons/          # *.svg + icons.json
-│   │       └── styles/         # tokens.css / reset.css / components.css
-│   ├── mcp-server/             # MCP サーバー本体 (TypeScript)
-│   │   └── src/
-│   │       ├── index.ts        # stdio で起動
-│   │       ├── tools/          # 7 個のツール定義
-│   │       └── loaders/        # design-system/ 配下を読む
-│   └── example-app/            # Vite + React + TS のサンプルアプリ
-│       └── src/                # App.tsx に "登録フォームを実装するプレースホルダ" あり
-└── docs/
-    └── how-it-works.md         # 仕組みの解説（クライアント説明用）
+│   │       ├── synth/          # 決定論的 token 合成（OKLCH + WCAG）+ provenance
+│   │       ├── components/     # Button のテンプレ生成（決定論）
+│   │       ├── validators/     # schema / contrast / CSS leak チェック
+│   │       └── bin/ds-check.js # 単体 CLI（approve からも呼ばれる）
+│   │
+│   ├── brand-brief/            # ★ Brief スキーマ・例・approve スクリプト
+│   │   ├── schema/brief.schema.json
+│   │   ├── examples/aurora.brief.yaml / nova.brief.yaml
+│   │   ├── proposals/          # ds-author-mcp が書き出す提案物の置き場
+│   │   └── bin/ds-approve.mjs  # ★ 人間専用の最終ゲート（MCP 公開なし）
+│   │
+│   └── example-app/            # Vite + React の動作デモ（A モード用）
+│
+├── .github/
+│   ├── skills/                 # ★ Copilot CLI の Skill (.md) — A の真ソース
+│   │   └── ds-{specify,plan,tasks,implement}/SKILL.md
+│   ├── agents/
+│   │   └── design-system-architect.md   # ★ 構造的 allowlist（edit/bash なし）
+│   ├── extensions/
+│   │   └── ds-guardrail/       # postToolUse フックで auto-repair / 検証
+│   └── prompts/                # VS Code Copilot Chat の slash-command（自動生成）
+│
+├── scripts/sync-vscode.mjs     # Skill → VS Code prompt の派生生成器
+├── .vscode/mcp.json            # ds-read + ds-author の両サーバー登録済み
+└── docs/how-it-works.md        # 元記事レイヤーの仕組み解説
 ```
 
-## 3. クイックスタート
+---
+
+## 2. クイックスタート
 
 ### セットアップ
 
 ```bash
 npm install
-npm run build:mcp
+npm run build           # 全 workspace をビルド
 ```
 
-ビルド後、`packages/mcp-server/dist/index.js` が生成されます。これを MCP クライアントから起動します。
+これで `packages/{mcp-server,ds-author-mcp}/dist/` が用意され、VS Code で開けば両 MCP が Copilot Chat (Agent モード) に自動認識されます。
 
-### 動作確認（MCP Inspector）
-
-公式ツールでブラウザから対話的にツールを叩けます:
+### A. 既存 DS を AI に使わせる（元記事の体験）
 
 ```bash
-npm run inspect:mcp
-```
+# 1. example-app 起動
+npm run dev --workspace @design-system-mcp-playground/example-app
+# → http://localhost:5173
 
-`get_components` → `get_component { "name": "Button" }` → `get_color_tokens` の順で呼んでみると、JSON が返ることが確認できます。
-
-### Storybook でデザインシステムの見本を見る
-
-```bash
+# 2. 別ターミナルで Storybook（見本との照合用）
 npm run storybook
-# → http://localhost:6006 が開きます
+# → http://localhost:6006
 ```
 
-Button / TextField / Stack の全バリアントとデザイントークン（カラー / 余白 / 角丸 / タイポグラフィ）の公式見本が確認できます。AI が生成した UI と「同じ見た目」になっているかを照合する基準になります。
+`packages/example-app/src/App.tsx` を VS Code で開き、Copilot Chat を **Agent モード** にして:
 
-### MCP クライアントへの登録
+> 「ユーザー登録フォームを **このデザインシステム** で作って。名前・メール・年齢の入力欄と送信ボタン、簡易バリデーションつき。」
 
-主に **VS Code の GitHub Copilot Chat** と **GitHub Copilot CLI** の両方を想定しています。
-このリポジトリには `.vscode/mcp.json` を同梱しているので、VS Code でこのフォルダを開くだけで両 MCP サーバー（`design-system` / `ds-author`）が Copilot Chat (Agent モード) に認識されます。
+AI が `get_components` → `get_component { name: "Button" }` → `get_color_tokens` … と順に MCP を叩きながら `<RegisterForm />` を実装します。Storybook の見本と並べて、同じ角丸・同じ色・同じフォーカスリングなら成功。
 
-CLI 側の Skill を真として、VS Code 側の prompt files (`.github/prompts/<name>.prompt.md`) は派生生成で同期します:
+### B. Brief から DS を AI に作らせる（新モード）
+
+事前準備として MCP Inspector を使うのが一番早いです:
+
+```bash
+npm run inspect:mcp                    # ds-read 側
+# 別タブで:
+node packages/ds-author-mcp/dist/index.js | npx @modelcontextprotocol/inspector
+```
+
+#### B-1. CLI で動かす（Copilot CLI / `gh copilot`）
+
+```bash
+# Spec-driven の流れ（Skill が誘導）
+/ds-specify                # → 対話で Brief を埋め、packages/brand-brief/proposals/ に YAML 保存
+/ds-plan                   # → どの token・component を作るかの計画
+/ds-tasks                  # → 機械的に実行可能な task に分解
+/ds-implement              # → ds-author MCP の propose_tokens / propose_component を順に呼ぶ
+```
+
+`ds-implement` は AI が `propose_*` で **提案ファイルだけ** を `packages/brand-brief/proposals/<slug>/<id>/proposed/...` に書き出します。`packages/design-system/` への書き込みは **人間が** 以下を実行して初めて起こります:
+
+```bash
+npm run ds:approve -- packages/brand-brief/proposals/<slug>/<id>
+# → schema + WCAG + CSS リーク を再検証 → コピー → git add
+```
+
+#### B-2. VS Code で動かす
+
+`.vscode/mcp.json` で両 MCP が登録済み。Copilot Chat を Agent モードにし、`/ds-specify` ... の各 prompt（`.github/prompts/` の派生ファイル）を順に投げれば同じフローが走ります。Skill (CLI 真) を編集したら:
 
 ```bash
 npm run sync:vscode
 ```
 
-このコマンドは以下を行います:
+を実行すると `.github/prompts/*.prompt.md` が再生成されます（CLI のツール名 → VS Code 形式に翻訳）。
 
-- `.github/skills/<name>/SKILL.md` を読み、対応する `.github/prompts/<name>.prompt.md` を生成（VS Code Copilot Chat の slash-command として動作）
-- ツール名を CLI 形式（`propose_tokens`, `read`, `bash`, …）から VS Code 形式（`ds-author/propose_tokens`, `codebase`, `runCommands`, …）に翻訳
-- `.vscode/mcp.json` に `ds-author` サーバーを idempotent に追加
+#### B-3. Brief を直接渡す（人間が一気通貫させる）
 
-skill を編集したら `npm run sync:vscode` を再実行してください。生成された prompt files を直接編集すると次回 sync で上書きされます。
-
-## 4. 提供するツール一覧
-
-| Tool                    | 入力              | 役割                                                                                            |
-| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------- |
-| `get_briefs`            | なし              | ds-author-mcp で生成された Brand Brief 一覧（slug / version / generatedAt）                     |
-| `get_components`        | `brief?`          | コンポーネント名・概要・タグの一覧（軽量）。`brief` 指定時は Brief 由来コンポーネントを返す     |
-| `get_component`         | `name`, `brief?`  | 指定コンポーネントの README（props / examples / tokens / related）。`brief` 指定で生成版 spec.md |
-| `get_color_tokens`      | `brief?`          | カラートークン。`brief` 指定で light/dark role pair を平坦化したトークン                        |
-| `get_radius_tokens`     | `brief?`          | 角丸トークン                                                                                    |
-| `get_typography_tokens` | `brief?`          | 文字サイズ・行間・weight                                                                        |
-| `get_spacing_tokens`    | `brief?`          | 余白トークン                                                                                    |
-| `get_icons`             | `query?`          | アイコン一覧（SVG ソースつき）。クエリで部分一致フィルタ                                        |
-| `explain_token`         | `brief`, `path`   | 指定トークンが Brief のどのフィールド由来かを返す（value / source / input / derivation + briefSha）|
-
-二段構え (`get_components` → `get_component`) にしているのは、AI のコンテキストを節約し「必要な分だけ詳細を引かせる」ためです。
-
-`brief` 引数は **Phase 2 以降の generated artifacts**（`packages/design-system/src/generated/<slug>/`）を読むためのスイッチです。引数を省略すると従来の手書きデザインシステムを返すので、既存の example-app デモはそのまま動きます。
-
-`explain_token` は ds-author-mcp が `tokens.json` の隣に書き出す `tokens.provenance.json` を参照し、各トークン値の出所（Brief のどのフィールド由来か、どんな derivation で計算されたか、Brief 全体の SHA）を返します。これにより「この色はどの Brief 行に紐づいているか」を AI／人間の双方が逆引きでき、PoC の決定論性・監査性を可視化できます。
-
-## 5. デモ用プロンプト集
-
-実装精度を確かめるために GitHub Copilot Chat (VS Code, Agent モード) で試すと効果的なプロンプト:
-
-1. **新規 UI 生成**
-
-    > 「ユーザー登録フォームを **このデザインシステム** で作って。名前・メールアドレス・年齢の入力欄と送信ボタンが必要。バリデーションも簡易につけて。」
-
-2. **既存スタイルの統一**
-
-    > 「下記の JSX を、デザインシステムのコンポーネントとトークンだけを使うようにリファクタして。」
-
-3. **アイコン込み**
-
-    > 「`+` 追加ボタンを、デザインシステムのアイコンとボタンで実装して。」
-
-4. **意図的なはずし確認**
-    > 「ステッパー（ウィザード）コンポーネントを作って。」 → デザインシステムに無いコンポーネントなので精度が落ちることが見える（記事と同じ示唆）。
-
-AI 側のログ（Copilot Chat の Tool Calls 表示など）で、実際に `get_components` → `get_component { name: "Button" }` … と順番に呼ばれていれば成功です。
-
-## 6. 実際に試してみる（example-app + GitHub Copilot Chat）
-
-`packages/example-app/` に、上記プロンプト 1 を試すための **Vite + React** 製のサンプルアプリを同梱しています。手順:
+対話を飛ばして既存サンプルで動きを確認するなら:
 
 ```bash
-# 1. ルートで一度だけ
-npm install
-npm run build:mcp
+# トークンだけ提案
+npm run ds:synth -- packages/brand-brief/examples/aurora.brief.yaml
 
-# 2. サンプルアプリの dev server を起動
-npm run dev --workspace @design-system-mcp-playground/example-app
-# → http://localhost:5173 が開きます
+# 静的検証だけ走らせる（schema / WCAG / CSS leak）
+npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 ```
 
-ブラウザを開くと、ヘッダ・使い方・**「ここに `<RegisterForm />` を実装してください」** という破線プレースホルダが表示されます。
+承認済みの aurora / nova は既に `packages/design-system/src/generated/` に入っているので、**A モードのデモから `brief: "aurora"` 引数つきで** ツールを呼べば、Brief から生まれた DS の見本がそのまま読み出せます。
 
-### プロンプトを送る
+---
 
-1. `packages/example-app/src/App.tsx` をエディタで開く
-2. Copilot Chat を **Agent モード** に切り替え、**デモプロンプト 1** をコピペして送信
-3. AI が `get_components` → `get_component { name: "Button" }` … を順に呼び、`<Placeholder />` を `<RegisterForm />` 実装で置き換える
-4. 保存すると Vite が HMR でブラウザに反映 → デザインシステム準拠の登録フォームが見える
+## 3. 提供する MCP ツール一覧
 
-### 「デザイン通りか」を視覚的に検証する（Storybook）
+### 3.1 `mcp-server` — ds-read（読むモード）
 
-別ターミナルで Storybook を立ち上げ、AI が生成した UI と公式見本を**横に並べて**見比べてください:
+| Tool                    | 入力              | 役割                                                                                                  |
+| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
+| `get_briefs`            | なし              | ds-author-mcp が生成した Brand Brief 一覧（slug / version / generatedAt）                             |
+| `get_components`        | `brief?`          | コンポーネント名・概要・タグ一覧。`brief` 指定で生成版を返す                                          |
+| `get_component`         | `name`, `brief?`  | 指定コンポーネントの README（props / examples / tokens / related）                                   |
+| `get_color_tokens`      | `brief?`          | カラートークン。`brief` 指定で light/dark role pair を平坦化                                          |
+| `get_radius_tokens`     | `brief?`          | 角丸トークン                                                                                          |
+| `get_typography_tokens` | `brief?`          | 文字サイズ・行間・weight                                                                              |
+| `get_spacing_tokens`    | `brief?`          | 余白トークン                                                                                          |
+| `get_icons`             | `query?`          | アイコン一覧（SVG ソースつき）。クエリで部分一致フィルタ                                              |
+| `explain_token`         | `brief`, `path`   | 指定トークンが Brief のどのフィールド由来かを返す（value / source / input / derivation + briefSha）   |
 
-```bash
-npm run storybook   # http://localhost:6006
-```
+- `get_components` → `get_component` の二段構えは AI のコンテキスト節約のため。
+- `brief` 引数を省略すると **手書きの legacy DS** を返すので、A モードのデモはそのまま動きます。
+- `explain_token` は `tokens.json` の隣に出る `tokens.provenance.json` を参照。AI／人間どちらも「この色値はどの Brief 行に紐づくか」を逆引きでき、決定論性と監査性の証拠になります。
 
-Storybook には Button / TextField / Stack の全バリアントと、デザイントークン（カラー / 余白 / 角丸 / タイポグラフィ）の一覧が並んでいます。
+### 3.2 `ds-author-mcp` — ds-author（作るモード）
 
-> 💡 AI が生成したフォームのボタンや入力欄が、Storybook の見本と**同じ見た目（同じ角丸・色・フォーカスリング）**になっていれば「デザインシステム準拠」。違っていたら、AI が独自実装してしまっている可能性があります。
+| Tool                | 入力                                       | 役割                                                                                |
+| ------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
+| `propose_tokens`    | `briefPath`                                | Brief を読み、全トークンを決定論的に合成 → `proposals/<slug>/<id>/` に書き出す     |
+| `propose_component` | `briefPath`, `name`, `variants[]`, `sizes[]` | 該当 Brief で Button を生成（テンプレ）。AI の自由度は variants/sizes 選択のみ      |
+| `list_proposals`    | なし                                       | 既存の提案一覧を返す                                                                |
 
-検証チェックリスト:
+**重要**: `ds-author-mcp` には **approve / write / delete に相当するツールが存在しません**。書き出すのは `packages/brand-brief/proposals/` 配下のみで、`packages/design-system/` への反映は人間が `npm run ds:approve` を実行して初めて起こります。
 
-- [ ] 生成された JSX が `import { Button, TextField, Stack } from "@design-system-mcp-playground/design-system"` を使っている
-- [ ] example-app のフォームと Storybook の Button/TextField の見た目が一致する
-- [ ] DevTools で `<button data-variant="primary">` のように **data 属性が付いている**（独自 className になっていない）
-- [ ] 色が `var(--color-brand-primary)` 等のトークン経由になっている
+---
 
-> 💡 期待通りに動かなかった場合は、Copilot Chat のツール呼び出しログ（メッセージ内の "Used N tools" を展開）で、実際に `get_components` などが呼ばれているかを確認してください。呼ばれていない場合は `npm run build:mcp` 済みであること、`.vscode/mcp.json` の `dist/index.js` が存在すること、Copilot Chat が **Agent モード** になっていることを確認します。
+## 4. アーキテクチャの安全境界（なぜ AI が暴走しないか）
 
-## 7. 自社のデザインシステムに導入するには
+| 防壁                          | 何を阻止しているか                                          | 場所                                                  |
+| ----------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
+| **Agent allowlist**           | AI が `bash`/`edit`/`create` を呼べない（構造的不可能）     | `.github/agents/design-system-architect.md`           |
+| **MCP の役割分離**            | 書く側 (ds-author) は提案ディレクトリにしか書けない         | `packages/ds-author-mcp/` に approve tool が無い      |
+| **決定論的 synth**            | 色・余白・タイポは LLM ではなく OKLCH/比率/テーブルで計算   | `packages/ds-author-mcp/src/synth/`                   |
+| **コンポーネント・テンプレ**  | TSX は固定テンプレ生成。LLM の自由度は variants/sizes のみ  | `packages/ds-author-mcp/src/components/button.ts`     |
+| **WCAG 検証 (二重)**          | propose 時 + approve 時に role-pair contrast を再チェック   | `packages/ds-author-mcp/src/validators/`              |
+| **ds-approve の path 白リスト** | 提案の `manifest.changes[].to` は `packages/design-system/` 配下のみ許可 | `packages/brand-brief/bin/ds-approve.mjs`             |
+| **ds-guardrail Hook**         | postToolUse で禁止パスへの読み書きを検知し追加検証          | `.github/extensions/ds-guardrail/extension.mjs`       |
+| **per-token provenance**      | 全 token に出所メタを付与し、後から誰でも逆引き可能         | `tokens.provenance.json` + `explain_token` MCP        |
 
-3 ステップで持ち込めます:
+つまり「AI が直接 `packages/design-system/` を書き換える」ルートが **構造的に存在しない** のがこの PoC の肝です。
 
-1. **`packages/mcp-server/` をコピー**して、自社リポジトリに追加
-2. **`loaders/paths.ts` の参照先**を、自社の `tokens` / `components` / `icons` ディレクトリに合わせて変更
-3. **コンポーネントごとに `README.md`** を整備（このリポジトリの Button/TextField/Stack の README をテンプレートに）
+---
 
-その後、`npm run build` → MCP クライアントに登録すれば完了です。
+## 5. カスタマイズ層（Skills / Custom Agent / MCP / Hooks）
+
+各層が責務をきれいに分けています:
+
+| 層            | 責務                                              | このリポジトリでの実装                                         |
+| ------------- | ------------------------------------------------- | -------------------------------------------------------------- |
+| **Skill**     | 「何を、どの順で」やるかの workflow（自然言語）   | `.github/skills/ds-{specify,plan,tasks,implement}/SKILL.md`    |
+| **Custom Agent** | AI に許可するツール集合（権限境界）             | `.github/agents/design-system-architect.md` (`tools:` allowlist) |
+| **MCP**       | 構造化された I/O（read / propose / explain）      | `mcp-server`, `ds-author-mcp`                                  |
+| **Hooks**     | 横断的な検証・ログ・auto-repair                   | `.github/extensions/ds-guardrail/extension.mjs` (postToolUse)  |
+| **Human**     | 反映の最終ゲート（CI と同等の役割）               | `npm run ds:approve` (`packages/brand-brief/bin/ds-approve.mjs`) |
+
+Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生生成されます。
+
+---
+
+## 6. 主な npm scripts
+
+| コマンド                    | 役割                                                                                          |
+| --------------------------- | --------------------------------------------------------------------------------------------- |
+| `npm run build`             | 全 workspace をビルド                                                                         |
+| `npm run build:mcp`         | ds-read MCP のみビルド                                                                        |
+| `npm run build:author-mcp`  | ds-author MCP のみビルド                                                                      |
+| `npm run inspect:mcp`       | MCP Inspector で ds-read を対話的にテスト                                                     |
+| `npm run storybook`         | デザインシステムの公式見本を起動                                                              |
+| `npm run ds:validate -- <brief.yaml>` | Brief を schema validation                                                          |
+| `npm run ds:synth -- <brief.yaml>`    | Brief から token を合成（CLI 単体実行）                                            |
+| `npm run ds:check -- <tokens.json>`   | tokens.json を schema + WCAG で検証                                                |
+| `npm run ds:approve -- <proposal-dir>` | **人間専用**: 提案を `packages/design-system/` に反映                            |
+| `npm run sync:vscode`       | Skill から VS Code prompt files を再生成                                                      |
+
+---
+
+## 7. デモ用プロンプト集
+
+### A モード（既存 DS を使わせる）
+
+1. **新規 UI 生成**: 「ユーザー登録フォームを **このデザインシステム** で作って。」
+2. **既存スタイルの統一**: 「下記の JSX を、このデザインシステムのコンポーネントとトークンだけ使ってリファクタして。」
+3. **アイコン込み**: 「`+` 追加ボタンを、このデザインシステムのアイコンとボタンで実装して。」
+4. **意図的なはずし**: 「ステッパー（ウィザード）を作って。」 — DS に無いので精度が落ちることを確認。
+
+### B モード（Brief から DS を作らせる）
+
+1. **Brief 収集**: `/ds-specify` を起動し、「カジュアルなフィットネスアプリ向けのデザインシステムを作りたい。プライマリは緑系で、丸めはやや強め…」と話す。
+2. **計画 → タスク → 実装**: `/ds-plan` → `/ds-tasks` → `/ds-implement` で順に進める。
+3. **逆引き**: できたあとに `explain_token { brief: "<slug>", path: "color.brand.primary.light" }` を呼んで来歴を確認。
+4. **検証**: `npm run ds:check -- packages/design-system/src/generated/<slug>/tokens.json` で WCAG が緑であることを確認。
+
+ツール呼び出しログ（Copilot Chat の "Used N tools" 展開）で実際に `propose_tokens` → `propose_component` の順に呼ばれていれば成功です。
+
+---
+
+## 8. 自社デザインシステムへの導入
+
+最小構成（A モードのみ移植）なら 3 ステップ:
+
+1. `packages/mcp-server/` をコピー
+2. `loaders/paths.ts` の参照先を自社の `tokens` / `components` / `icons` に向ける
+3. コンポーネントごとに `README.md` を整備（このリポの Button/TextField/Stack をテンプレに）
+
+B モード（Brief 起点）まで持ち込むなら、追加で:
+
+4. `packages/brand-brief/` の Brief schema を自社の意思決定軸に合わせて修正
+5. `packages/ds-author-mcp/src/synth/` の決定論ロジックを社内ガイドラインに合わせる（既存色から hue を抽出する等）
+6. `.github/agents/` `.github/skills/` `.github/extensions/` を自社の他リポジトリと整合する形に複製
 
 詳しい仕組みは [`docs/how-it-works.md`](./docs/how-it-works.md) を参照してください。
 
-## 8. スコープ外（将来の拡張余地）
+---
 
-- **Figma MCP との連携**: 記事のデモは Figma MCP と組み合わせて Figma → コードを実現していました。この MCP と並列に登録すれば同じ体験を作れます。
-- **リモート MCP / 認証**: 社内共通サーバーとして配るなら HTTP/SSE transport + auth を追加。
-- **インクリメンタル更新 / キャッシュ**: ファイル監視で変更時のみ再ロードする最適化。
-- **Storybook 連携**: `*.stories.tsx` から examples を自動抽出する loader。
+## 9. スコープ外（将来の拡張余地）
 
-## 9. 参考
+- **Figma 連携**: Storybook を SSoT、Figma は探索・索引に振る運用（`@storybook/addon-designs` / Storybook Connect で双方向リンク）。
+- **コンポーネントの拡張**: 現在 `propose_component` は Button のみ。TextField / Select / Modal などへ拡張。
+- **リモート MCP / 認証**: 社内共通サーバーとして配るなら HTTP/SSE + auth。
+- **インクリメンタル更新**: ファイル監視で変更時のみ再ロード。
+- **Brief の対話 UI**: `/ds-specify` を CLI/Chat 以外にも Web UI として提供。
+
+---
+
+## 10. 参考
 
 - 元記事: [デザインシステムを MCP サーバー化したら、UI 開発が劇的にかわった話](https://zenn.dev/ubie_dev/articles/f927aaff02d618) — Ubie 江崎さん
 - [Model Context Protocol 公式](https://modelcontextprotocol.io/)
 - [@modelcontextprotocol/sdk (TypeScript)](https://github.com/modelcontextprotocol/typescript-sdk)
+- [GitHub Copilot CLI](https://docs.github.com/en/copilot/concepts/agents/about-copilot-cli)
+- [GitHub Spec Kit](https://github.com/github/spec-kit) — このリポの `ds-{specify,plan,tasks,implement}` の発想元
