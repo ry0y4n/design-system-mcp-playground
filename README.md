@@ -16,22 +16,31 @@ Ubie の [デザインシステムを MCP サーバー化した話](https://zenn
 
 A は元記事と同じ「AI に既存 DS を正確に渡す」体験。B はその DS 自体を AI に Brief から生成させる新しい体験で、**Spec-driven**（specify → plan → tasks → implement）と **決定論的 synth** と **人間専用の approve ゲート** を組み合わせて、AI に「危険なレベルの自由度」を与えずに DS を立ち上げられることを示します。
 
-```
-                      [Brief YAML]                              [example-app]
-                          │                                          │
-                          ▼  (B: 作るモード)                         │  (A: 読むモード)
-   ds-specify → ds-plan → ds-tasks → ds-implement                   │
-   （対話で Brief 収集 → 計画 → タスク化 → 提案生成）                │
-                          │                                          │
-                          ▼                                          ▼
-              ┌───────────────────────┐                  ┌────────────────────┐
-              │  ds-author-mcp        │  proposes →     │  mcp-server        │
-              │  propose_tokens       │   ┌──────┐      │  get_components    │
-              │  propose_component    │ → │HUMAN │ →    │  get_*_tokens      │
-              │  (deterministic synth │   │approv│      │  get_icons         │
-              │   + WCAG validators)  │   └──────┘      │  explain_token  ←  │ 来歴
-              └───────────────────────┘     ↓            └────────────────────┘
-                                  packages/design-system/  (実体)
+```mermaid
+flowchart LR
+    Brief[Brief YAML]
+    App[example-app]
+
+    subgraph B["B: 作るモード"]
+        direction TB
+        Specify[ds-specify] --> Plan[ds-plan] --> Tasks[ds-tasks] --> Implement[ds-implement]
+        Author["ds-author-mcp<br/>propose_tokens<br/>propose_component<br/>(deterministic synth<br/>+ WCAG validators)"]
+        Approve{{"HUMAN<br/>approve"}}
+        Implement --> Author
+        Author -- proposes --> Approve
+    end
+
+    subgraph A["A: 読むモード"]
+        direction TB
+        Reader["mcp-server<br/>get_components<br/>get_*_tokens<br/>get_icons<br/>explain_token (来歴)"]
+    end
+
+    DS[("packages/design-system/<br/>(実体)")]
+
+    Brief --> Specify
+    Approve --> DS
+    DS --> Reader
+    App --> Reader
 ```
 
 ---
