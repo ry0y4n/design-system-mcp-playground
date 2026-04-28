@@ -22,6 +22,8 @@ import { loadBrief } from "./brief.js";
 import { synthesizeTokens } from "./synth/index.js";
 import { tokensToCss } from "./synth/tokensCss.js";
 import { fontStackFor } from "./synth/typography.js";
+import { buildProvenance } from "./synth/provenance.js";
+import { hashBrief } from "./util/briefSha.js";
 import { generateComponent } from "./components/button.js";
 import { runAllValidators, formatReport } from "./validators/index.js";
 
@@ -79,6 +81,8 @@ async function main() {
       const brief = loaded.brief;
       const tokens = synthesizeTokens(brief);
       const report = runAllValidators(tokens);
+      const briefSha = hashBrief(brief);
+      const provenance = buildProvenance(tokens, brief, briefSha);
 
       const slug = brief.meta.slug ?? brief.meta.name;
       const proposalId = newProposalId();
@@ -89,6 +93,7 @@ async function main() {
         briefPath,
         briefSlug: slug,
         briefVersion: brief.meta.version,
+        briefSha,
         generator: "ds-author-mcp",
         synthVersion: tokens.meta.synthVersion,
         createdAt: new Date().toISOString(),
@@ -103,6 +108,11 @@ async function main() {
             from: "proposed/packages/design-system/tokens/generated.tokens.json",
             to: "packages/design-system/tokens/generated.tokens.json",
           },
+          {
+            type: "create" as const,
+            from: "proposed/packages/design-system/tokens/generated.tokens.provenance.json",
+            to: "packages/design-system/tokens/generated.tokens.provenance.json",
+          },
         ],
       };
 
@@ -110,6 +120,10 @@ async function main() {
       writeFileEnsureDir(
         join(proposalRoot, "proposed/packages/design-system/tokens/generated.tokens.json"),
         JSON.stringify(tokens, null, 2) + "\n"
+      );
+      writeFileEnsureDir(
+        join(proposalRoot, "proposed/packages/design-system/tokens/generated.tokens.provenance.json"),
+        JSON.stringify(provenance, null, 2) + "\n"
       );
       writeFileEnsureDir(
         join(proposalRoot, "validation-report.txt"),
@@ -191,6 +205,7 @@ async function main() {
 
       const tokensJsonRel = `packages/design-system/src/generated/${slug}/tokens.json`;
       const tokensCssRel = `packages/design-system/src/generated/${slug}/tokens.css`;
+      const tokensProvRel = `packages/design-system/src/generated/${slug}/tokens.provenance.json`;
 
       const proposalId = newProposalId();
       const proposalRoot = join(proposalsDir(), slug, proposalId);
@@ -199,8 +214,12 @@ async function main() {
       const writeProposed = (rel: string, body: string) =>
         writeFileEnsureDir(join(proposalRoot, "proposed", rel), body);
 
+      const briefSha = hashBrief(brief);
+      const provenance = buildProvenance(tokens, brief, briefSha);
+
       writeProposed(tokensJsonRel, JSON.stringify(tokens, null, 2) + "\n");
       writeProposed(tokensCssRel, css);
+      writeProposed(tokensProvRel, JSON.stringify(provenance, null, 2) + "\n");
       for (const f of componentFiles) writeProposed(f.path, f.contents);
 
       const cssRoot = join(proposalRoot, "proposed/packages/design-system/src/generated", slug);
@@ -215,6 +234,7 @@ async function main() {
         component: { name, variants, sizes },
         generator: "ds-author-mcp",
         synthVersion: tokens.meta.synthVersion,
+        briefSha,
         createdAt: new Date().toISOString(),
         validation: {
           ok: report.ok,
@@ -225,6 +245,7 @@ async function main() {
         changes: [
           { type: "replace" as const, from: `proposed/${tokensJsonRel}`, to: tokensJsonRel },
           { type: "replace" as const, from: `proposed/${tokensCssRel}`, to: tokensCssRel },
+          { type: "replace" as const, from: `proposed/${tokensProvRel}`, to: tokensProvRel },
           ...componentFiles.map((f) => ({
             type: f.type,
             from: `proposed/${f.path}`,

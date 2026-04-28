@@ -15,6 +15,7 @@ import {
   loadBriefColorTokens,
   loadBriefComponentDetail,
   loadBriefComponentSummaries,
+  loadBriefProvenance,
   loadBriefRadiusTokens,
   loadBriefSpacingTokens,
   loadBriefTypographyTokens,
@@ -210,6 +211,62 @@ export function registerTools(server: McpServer) {
           })
         : icons;
       return jsonContent({ icons: filtered });
+    }
+  );
+
+  server.registerTool(
+    "explain_token",
+    {
+      title: "Explain how a generated token was derived from a Brand Brief",
+      description:
+        "Brief 由来の単一トークンの provenance（来歴）を返します。tokens.provenance.json から該当 path のレコードを取り出し、value / source / input / effectiveInput / derivation と Brief SHA を含む詳細を返します。`brief` は必須、`path` はドット区切りパス（例: 'color.brand.primary.light', 'space.4', 'typography.heading1.fontSize'）。",
+      inputSchema: {
+        brief: z
+          .string()
+          .describe("Brand Brief slug (例: 'aurora'). get_briefs で確認できます。"),
+        path: z
+          .string()
+          .describe(
+            "Token のドット区切りパス。例: 'color.brand.primary.light', 'space.4', 'typography.heading1.fontSize'。"
+          ),
+      },
+    },
+    async ({ brief, path }) => {
+      if (!(await briefExists(brief))) return unknownBrief(brief);
+      const prov = await loadBriefProvenance(brief);
+      if (!prov) {
+        return {
+          isError: true as const,
+          content: [
+            {
+              type: "text" as const,
+              text: `Brief '${brief}' に tokens.provenance.json がありません。propose_tokens / propose_component を再実行 → ds:approve してください。`,
+            },
+          ],
+        };
+      }
+      const record = prov.records.find((r) => r.path === path);
+      if (!record) {
+        const sample = prov.records.slice(0, 5).map((r) => r.path);
+        return {
+          isError: true as const,
+          content: [
+            {
+              type: "text" as const,
+              text:
+                `path '${path}' は Brief '${brief}' の provenance に存在しません。` +
+                `利用可能な path は ${prov.records.length} 件（例: ${sample.join(", ")} など）。`,
+            },
+          ],
+        };
+      }
+      return jsonContent({
+        briefSlug: prov.briefSlug,
+        briefSha: prov.briefSha,
+        synthVersion: prov.synthVersion,
+        generatedAt: prov.generatedAt,
+        record,
+      });
     }
   );
 }

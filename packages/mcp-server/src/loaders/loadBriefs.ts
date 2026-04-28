@@ -229,3 +229,29 @@ export async function loadBriefComponentDetail(
     return null;
   }
 }
+
+/** Provenance readback. See packages/ds-author-mcp/src/synth/provenance.ts. */
+export type BriefProvenanceRecord = {
+  path: string;
+  value: string | number;
+  source: string;
+  input: unknown;
+  effectiveInput: unknown;
+  derivation: string;
+};
+export type BriefProvenance = {
+  briefSha: string;
+  briefSlug: string;
+  synthVersion: string;
+  generatedAt: string;
+  records: BriefProvenanceRecord[];
+};
+
+export async function loadBriefProvenance(slug: string): Promise<BriefProvenance | null> {
+  try {
+    const raw = await readFile(join(briefRoot(slug), "tokens.provenance.json"), "utf8");
+    return JSON.parse(raw) as BriefProvenance;
+  } catch {
+    return null;
+  }
+}

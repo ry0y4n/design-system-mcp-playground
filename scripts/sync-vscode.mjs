@@ -40,6 +40,7 @@ const SERVER_OF_TOOL = {
   get_typography_tokens: "design-system",
   get_spacing_tokens: "design-system",
   get_icons: "design-system",
+  explain_token: "design-system",
 };
 
 // Map CLI built-in tool names to VS Code tool sets / tools. We err on the safe

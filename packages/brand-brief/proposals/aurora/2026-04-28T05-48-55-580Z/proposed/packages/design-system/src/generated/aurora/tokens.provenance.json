@@ -1,0 +1,504 @@
+{
+  "briefSha": "3f000f17d649ff2e",
+  "briefSlug": "aurora",
+  "synthVersion": "0.1.0",
+  "generatedAt": "2026-04-28T05:48:55.578Z",
+  "records": [
+    {
+      "path": "color.background.base.light",
+      "value": "#f9fcff",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.background.base.dark",
+      "value": "#060809",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.background.subtle.light",
+      "value": "#f1f4f6",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.background.subtle.dark",
+      "value": "#101214",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.text.primary.light",
+      "value": "#101214",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.text.primary.dark",
+      "value": "#eff2f5",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.text.secondary.light",
+      "value": "#4b4d50",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.text.secondary.dark",
+      "value": "#a8abae",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.text.disabled.light",
+      "value": "#7e8183",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.text.disabled.dark",
+      "value": "#66696b",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.text.onBrand.light",
+      "value": "#000000",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "Readable foreground picked against brand.primary.light (derived from primarySeed)."
+    },
+    {
+      "path": "color.text.onBrand.dark",
+      "value": "#000000",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "Readable foreground picked against brand.primary.dark (derived from primarySeed)."
+    },
+    {
+      "path": "color.border.default.light",
+      "value": "#838789",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.border.default.dark",
+      "value": "#616466",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.border.subtle.light",
+      "value": "#d5d8da",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for light mode."
+    },
+    {
+      "path": "color.border.subtle.dark",
+      "value": "#2c2e30",
+      "source": "brief.brand.colors.neutralBase",
+      "input": "cool",
+      "effectiveInput": "cool",
+      "derivation": "Neutral OKLCH palette (hue from neutralBase=cool) with fixed L for dark mode."
+    },
+    {
+      "path": "color.brand.primary.light",
+      "value": "#5a7dfd",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "OKLCH from primarySeed, contrast-fixed vs background.base (light mode)."
+    },
+    {
+      "path": "color.brand.primary.dark",
+      "value": "#5b7fff",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "OKLCH from primarySeed, contrast-fixed vs background.base (dark mode)."
+    },
+    {
+      "path": "color.brand.primaryHover.light",
+      "value": "#4d6dec",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "brand.primary lightness nudged ±0.05 for hover (light mode)."
+    },
+    {
+      "path": "color.brand.primaryHover.dark",
+      "value": "#7394f7",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "brand.primary lightness nudged ±0.05 for hover (dark mode)."
+    },
+    {
+      "path": "color.brand.primaryActive.light",
+      "value": "#405dda",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "brand.primary lightness nudged ±0.10 for active (light mode)."
+    },
+    {
+      "path": "color.brand.primaryActive.dark",
+      "value": "#88a6fb",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "brand.primary lightness nudged ±0.10 for active (dark mode)."
+    },
+    {
+      "path": "color.brand.primarySubtle.light",
+      "value": "#e8eefe",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "primarySeed hue at very low chroma (light mode)."
+    },
+    {
+      "path": "color.brand.primarySubtle.dark",
+      "value": "#1e263a",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "primarySeed hue at very low chroma (dark mode)."
+    },
+    {
+      "path": "color.semantic.danger.light",
+      "value": "#bd413f",
+      "source": "synth.SEMANTIC_HUE.danger",
+      "input": null,
+      "effectiveInput": "danger",
+      "derivation": "Canonical danger hue, contrast-clamped against background.base.light."
+    },
+    {
+      "path": "color.semantic.danger.dark",
+      "value": "#f2716a",
+      "source": "synth.SEMANTIC_HUE.danger",
+      "input": null,
+      "effectiveInput": "danger",
+      "derivation": "Canonical danger hue, contrast-clamped against background.base.dark."
+    },
+    {
+      "path": "color.semantic.success.light",
+      "value": "#1c882d",
+      "source": "synth.SEMANTIC_HUE.success",
+      "input": null,
+      "effectiveInput": "success",
+      "derivation": "Canonical success hue, contrast-clamped against background.base.light."
+    },
+    {
+      "path": "color.semantic.success.dark",
+      "value": "#54b85b",
+      "source": "synth.SEMANTIC_HUE.success",
+      "input": null,
+      "effectiveInput": "success",
+      "derivation": "Canonical success hue, contrast-clamped against background.base.dark."
+    },
+    {
+      "path": "color.focus.ring.light",
+      "value": "#4766d9",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "Focus ring uses primarySeed hue with high chroma, contrast-clamped against background.base.light."
+    },
+    {
+      "path": "color.focus.ring.dark",
+      "value": "#9bb5fc",
+      "source": "brief.brand.colors.primarySeed",
+      "input": "#5B7FFF",
+      "effectiveInput": "#5B7FFF",
+      "derivation": "Focus ring uses primarySeed hue with high chroma, contrast-clamped against background.base.dark."
+    },
+    {
+      "path": "space.0",
+      "value": "0",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 0 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.1",
+      "value": "4px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 1 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.2",
+      "value": "8px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 2 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.3",
+      "value": "12px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 3 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.4",
+      "value": "16px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 4 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.6",
+      "value": "24px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 6 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.8",
+      "value": "32px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 8 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.12",
+      "value": "48px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 12 × base 4px (normal scale)."
+    },
+    {
+      "path": "space.16",
+      "value": "64px",
+      "source": "brief.brand.spacingScale",
+      "input": "normal",
+      "effectiveInput": "normal",
+      "derivation": "step 16 × base 4px (normal scale)."
+    },
+    {
+      "path": "radius.none",
+      "value": "0",
+      "source": "brief.brand.radiusScale",
+      "input": "soft",
+      "effectiveInput": "soft",
+      "derivation": "Fixed lookup table for soft radius scale."
+    },
+    {
+      "path": "radius.sm",
+      "value": "4px",
+      "source": "brief.brand.radiusScale",
+      "input": "soft",
+      "effectiveInput": "soft",
+      "derivation": "Fixed lookup table for soft radius scale."
+    },
+    {
+      "path": "radius.md",
+      "value": "8px",
+      "source": "brief.brand.radiusScale",
+      "input": "soft",
+      "effectiveInput": "soft",
+      "derivation": "Fixed lookup table for soft radius scale."
+    },
+    {
+      "path": "radius.lg",
+      "value": "12px",
+      "source": "brief.brand.radiusScale",
+      "input": "soft",
+      "effectiveInput": "soft",
+      "derivation": "Fixed lookup table for soft radius scale."
+    },
+    {
+      "path": "radius.full",
+      "value": "9999px",
+      "source": "brief.brand.radiusScale",
+      "input": "soft",
+      "effectiveInput": "soft",
+      "derivation": "Fixed lookup table for soft radius scale."
+    },
+    {
+      "path": "typography.body.fontSize",
+      "value": "16px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for body."
+    },
+    {
+      "path": "typography.body.lineHeight",
+      "value": "1.5",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for body."
+    },
+    {
+      "path": "typography.body.fontWeight",
+      "value": 400,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (body)."
+    },
+    {
+      "path": "typography.bodySmall.fontSize",
+      "value": "12.8px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for bodySmall."
+    },
+    {
+      "path": "typography.bodySmall.lineHeight",
+      "value": "1.5",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for bodySmall."
+    },
+    {
+      "path": "typography.bodySmall.fontWeight",
+      "value": 400,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (bodySmall)."
+    },
+    {
+      "path": "typography.caption.fontSize",
+      "value": "10.24px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for caption."
+    },
+    {
+      "path": "typography.caption.lineHeight",
+      "value": "1.5",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for caption."
+    },
+    {
+      "path": "typography.caption.fontWeight",
+      "value": 400,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (caption)."
+    },
+    {
+      "path": "typography.heading3.fontSize",
+      "value": "20px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for heading3."
+    },
+    {
+      "path": "typography.heading3.lineHeight",
+      "value": "1.5",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for heading3."
+    },
+    {
+      "path": "typography.heading3.fontWeight",
+      "value": 600,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (heading3)."
+    },
+    {
+      "path": "typography.heading2.fontSize",
+      "value": "25px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for heading2."
+    },
+    {
+      "path": "typography.heading2.lineHeight",
+      "value": "1.25",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for heading2."
+    },
+    {
+      "path": "typography.heading2.fontWeight",
+      "value": 700,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (heading2)."
+    },
+    {
+      "path": "typography.heading1.fontSize",
+      "value": "31.25px",
+      "source": "brief.brand.typography.scaleRatio",
+      "input": 1.25,
+      "effectiveInput": 1.25,
+      "derivation": "16px × 1.25^step for heading1."
+    },
+    {
+      "path": "typography.heading1.lineHeight",
+      "value": "1.25",
+      "source": "synth.typography.lineHeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant line-height (1.5 for body-sized, 1.25 for heading-sized) for heading1."
+    },
+    {
+      "path": "typography.heading1.fontWeight",
+      "value": 700,
+      "source": "synth.typography.fontWeight",
+      "input": null,
+      "effectiveInput": null,
+      "derivation": "Constant weight per slot (heading1)."
+    }
+  ]
+}

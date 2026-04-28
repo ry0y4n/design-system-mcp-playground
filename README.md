@@ -110,10 +110,13 @@ skill を編集したら `npm run sync:vscode` を再実行してください。
 | `get_typography_tokens` | `brief?`          | 文字サイズ・行間・weight                                                                        |
 | `get_spacing_tokens`    | `brief?`          | 余白トークン                                                                                    |
 | `get_icons`             | `query?`          | アイコン一覧（SVG ソースつき）。クエリで部分一致フィルタ                                        |
+| `explain_token`         | `brief`, `path`   | 指定トークンが Brief のどのフィールド由来かを返す（value / source / input / derivation + briefSha）|
 
 二段構え (`get_components` → `get_component`) にしているのは、AI のコンテキストを節約し「必要な分だけ詳細を引かせる」ためです。
 
 `brief` 引数は **Phase 2 以降の generated artifacts**（`packages/design-system/src/generated/<slug>/`）を読むためのスイッチです。引数を省略すると従来の手書きデザインシステムを返すので、既存の example-app デモはそのまま動きます。
+
+`explain_token` は ds-author-mcp が `tokens.json` の隣に書き出す `tokens.provenance.json` を参照し、各トークン値の出所（Brief のどのフィールド由来か、どんな derivation で計算されたか、Brief 全体の SHA）を返します。これにより「この色はどの Brief 行に紐づいているか」を AI／人間の双方が逆引きでき、PoC の決定論性・監査性を可視化できます。
 
 ## 5. デモ用プロンプト集
 
