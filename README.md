@@ -271,12 +271,88 @@ Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生
 
 ### B モード（Brief から DS を作らせる）
 
-1. **Brief 収集**: `/ds-specify` を起動し、「カジュアルなフィットネスアプリ向けのデザインシステムを作りたい。プライマリは緑系で、丸めはやや強め…」と話す。
-2. **計画 → タスク → 実装**: `/ds-plan` → `/ds-tasks` → `/ds-implement` で順に進める。
-3. **逆引き**: できたあとに `explain_token { brief: "<slug>", path: "color.brand.primary.light" }` を呼んで来歴を確認。
-4. **検証**: `npm run ds:check -- packages/design-system/src/generated/<slug>/tokens.json` で WCAG が緑であることを確認。
+VS Code Copilot Chat を **Agent モード** にし、`.github/prompts/ds-*.prompt.md` の各 prompt を順に投げます。以下は「ダークファースト・ノートアプリ向け DS」を立ち上げる想定の **コピペで動くサンプル会話**（`packages/brand-brief/examples/aurora.brief.yaml` 相当を生成する流れ）。
 
-ツール呼び出しログ（Copilot Chat の "Used N tools" 展開）で実際に `propose_tokens` → `propose_component` の順に呼ばれていれば成功です。
+#### Step 1. `/ds-specify` — Brief を対話で固める
+
+`/ds-specify` 起動 → AI が schema を読んで質問してくる → 以下を順に貼ると 1 周回ります:
+
+```text
+夜の集中を支える、静かで温度のあるノートアプリのデザインシステムを作りたい。
+名前は Aurora、slug は aurora、version 0.1.0。
+
+設計思想:
+- mission: 夜の集中を支える、静かで温度のあるノートアプリ
+- principles:
+  1. ユーザーの集中を奪わない（控えめなコントラスト、強い色は要所だけ）
+  2. 暗所で長時間使っても疲れない（dark first、light も完全サポート）
+  3. 行動を止めない（クリック数より「迷い時間」を減らす）
+- antiPrinciples: 装飾のための装飾 / 通知で関心を奪う
+
+ブランド:
+- primarySeed: #5B7FFF
+- accentSeed: #FFB86B
+- neutralBase: cool
+- typography: humanist-sans, scaleRatio 1.25
+- spacing: normal / radius: soft
+- tone: neutral × calm、落ち着いた書き手の隣にいる声色
+
+audience:
+- primary: 夜にメモを書く 25–40 歳の知的労働者
+- secondary: ライター・研究者
+- WCAG AA、darkMode 必須、reducedMotion 尊重
+
+constraints:
+- mustHave: dark mode は light と同等品質 / キーボードのみで全機能到達
+- mustNot: フラッシュするアニメ / success/info に強い赤
+- references: Linear, Notion
+```
+
+> 期待結果: `packages/brand-brief/proposals/<timestamp>-aurora.yaml`（または同等パス）が **create** され、AI が次は `/ds-plan` を提案する。
+
+#### Step 2. `/ds-plan` — 何を作るかの計画
+
+```text
+/ds-plan packages/brand-brief/examples/aurora.brief.yaml
+で計画を立ててください。dark mode 必須なので、color.brand.* は light/dark 両方の
+スケールが要ります。コンポーネントは Button / TextField / Stack の最小 3 つでOK。
+```
+
+> 期待結果: チャット内に「token 群（color/space/radius/typography）」「component scaffold」「validator が落ちないための WCAG コントラスト下限」などの計画が列挙される。
+
+#### Step 3. `/ds-tasks` — 実行可能タスクに分解
+
+```text
+/ds-tasks 上の計画を、ds-author MCP の propose_tokens / propose_component
+を 1 タスク = 1 ツール呼び出しになる粒度に分解してください。
+```
+
+> 期待結果: 「T1: propose_tokens(brief=aurora)」「T2: propose_component(brief=aurora, name=Button)」… の番号付きリスト。
+
+#### Step 4. `/ds-implement` — ツール呼び出しで提案を生成
+
+```text
+/ds-implement T1 から順番に実行してください。propose_* は提案ファイルだけ
+書き出すので、packages/design-system/ には触らないこと。
+```
+
+> 期待結果: Copilot Chat の "Used N tools" を展開すると `ds-author/propose_tokens` → `ds-author/propose_component` の順に呼ばれている。`packages/brand-brief/proposals/aurora/<id>/proposed/` に成果物が出る。
+
+#### Step 5. 来歴確認 → 人間の承認 → 検証
+
+```text
+ds-read/explain_token { brief: "aurora", path: "color.brand.primary.500" }
+を呼んで、この値の出自（どの seed からどの rule で導かれたか）を見せてください。
+```
+
+承認は **必ず人間が CLI で**:
+
+```bash
+npm run ds:approve -- packages/brand-brief/proposals/aurora/<latest-id>
+npm run ds:check  -- packages/design-system/src/generated/aurora/tokens.json
+```
+
+ツール呼び出しログ（"Used N tools" 展開）で実際に `propose_tokens` → `propose_component` の順に呼ばれていれば成功です。AI が `bash` / `edit` で `packages/design-system/` を直接書こうとすると **Hook が物理的に拒否** します（§4 安全境界マトリクス参照）。
 
 ---
 
