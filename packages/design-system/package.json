@@ -8,6 +8,8 @@
     ".": "./src/index.ts",
     "./tokens": "./src/tokens/index.ts",
     "./components/*": "./src/components/*/index.ts",
+    "./generated/*/tokens.css": "./src/generated/*/tokens.css",
+    "./generated/*": "./src/generated/*/index.ts",
     "./styles": "./src/styles/index.css",
     "./styles/*": "./src/styles/*",
     "./tokens/*": "./src/tokens/*"

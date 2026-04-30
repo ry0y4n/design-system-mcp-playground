@@ -176,7 +176,46 @@ npm run ds:synth -- packages/brand-brief/examples/aurora.brief.yaml
 npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 ```
 
-承認済みの aurora / nova は既に `packages/design-system/src/generated/` に入っているので、**A モードのデモから `brief: "aurora"` 引数つきで** ツールを呼べば、Brief から生まれた DS の見本がそのまま読み出せます。
+承認済みの DS は `packages/design-system/src/generated/<slug>/` に出力されます（クローン直後は空。`/ds-specify` から始めて `ds:approve` するとここに反映されます）。**A モードのデモから `brief: "<slug>"` 引数つきで** ツールを呼べば、Brief から生まれた DS の見本がそのまま読み出せます。
+
+#### B-4. ds:approve した結果を example-app で試す
+
+`ds:approve` で `packages/design-system/src/generated/<slug>/<Component>/` が出来たら、`example-app` からは **subpath import** で直接読み込めます。`packages/design-system/package.json` の `exports` に以下を入れてあるので、追加のビルド設定は不要です:
+
+```jsonc
+"./generated/*/tokens.css": "./src/generated/*/tokens.css",
+"./generated/*":            "./src/generated/*/index.ts"
+```
+
+利用例（`aurora` で Button / TextField / Stack を一周生成した場合）:
+
+```tsx
+// packages/example-app/src/App.tsx
+import { Button } from "@design-system-mcp-playground/design-system/generated/aurora/Button";
+import { TextField } from "@design-system-mcp-playground/design-system/generated/aurora/TextField";
+import { Stack } from "@design-system-mcp-playground/design-system/generated/aurora/Stack";
+import "@design-system-mcp-playground/design-system/generated/aurora/tokens.css";
+
+export function App() {
+  return (
+    <div data-brief="aurora">
+      <Stack direction="vertical" gap={3}>
+        <TextField label="名前" placeholder="山田 太郎" />
+        <Button variant="primary" size="md">送信</Button>
+      </Stack>
+    </div>
+  );
+}
+```
+
+ポイント:
+
+- ルート要素に `data-brief="aurora"` を付けると、`tokens.css` 内の `[data-brief="aurora"] { --color-* ... }` でスコープされた変数群が当たります。
+- ダークモードは `data-theme="dark"` を併用すれば `tokens.css` 側が両形 (`[data-brief="aurora"][data-theme="dark"]` / `[data-brief="aurora"] [data-theme="dark"]`) を想定済みなので OK。
+- 別 Brief（`nova` など）を並べたいときは import パスとルートの `data-brief` を差し替えるだけで共存できます。
+- ホットリロードを観察したいなら `npm run dev --workspace @design-system-mcp-playground/example-app` を起動したまま、Brief を直して `ds-implement` → `ds:approve` のループを回せば、生成 Button の見た目が更新されます。
+
+> 注: `App.tsx` の改変自体は AI には禁止されていません（`example-app/` は agent allowlist で `edit` 可）。AI に書き換えさせたいときは「B-4 のサンプルを App.tsx に流し込んで」と指示すれば、`get_components({ brief: "aurora" })` で内容を確認してから編集します。
 
 ---
 
