@@ -144,20 +144,105 @@ AI が `get_components` → `get_component { name: "Button" }` → `get_color_to
 
 #### B-1. CLI で動かす（Copilot CLI / `gh copilot`）
 
-```bash
-# Spec-driven の流れ（Skill が誘導）
-/ds-specify                # → 対話で Brief を埋め、packages/brand-brief/proposals/ に YAML 保存
-/ds-plan                   # → どの token・component を作るかの計画
-/ds-tasks                  # → 機械的に実行可能な task に分解
-/ds-implement              # → ds-author MCP の propose_tokens / propose_component を順に呼ぶ
+Skill が誘導するので、各 slash command の最初のターンに下記の入力例をそのままコピペすれば一周できます。新ブランド **Solstice** を素材に進める想定です（既存 `aurora` を流用したい場合は B-3 へ）。
+
+##### (1) `/ds-specify` — Brief を対話で確定
+
+```
+/ds-specify
 ```
 
-`ds-implement` は AI が `propose_*` で **提案ファイルだけ** を `packages/brand-brief/proposals/<slug>/<id>/proposed/...` に書き出します。`packages/design-system/` への書き込みは **人間が** 以下を実行して初めて起こります:
+最初の AI ターンに対する入力例（schema フィールドを一括投入して時短）:
+
+```text
+全部まとめて指定します。
+
+ブランド名: Solstice / slug: solstice / version: 0.1.0
+ミッション: 朝も夜も同じ集中で書ける、軽量なライティングノート
+
+原則:
+  - 夜でも目が疲れない（light/dark 同等品質）
+  - 装飾より読みやすさ（強調は要所だけ）
+  - キーボードで完結する操作
+反原則:
+  - 装飾のための装飾
+  - 強い赤を success/info に流用する
+
+ブランドカラー: primary #3F6BFF / accent #FFB347 / neutralBase: cool
+タイポ: humanist-sans / scaleRatio 1.25
+スペーシング: normal / 角丸: soft
+トーン: formality=neutral / energy=calm / voice=落ち着いた、書き手の隣にいるような声色
+
+ターゲット主: 朝も夜も書く社会人ライター（25–40 歳）
+アクセシビリティ: WCAG AA / darkMode=true / reducedMotion=true
+
+mustHave:
+  - dark mode は light と同等品質
+  - キーボード操作のみで全機能到達可能
+mustNot:
+  - フラッシュするアニメーション
+  - 強い赤を success/info に使う
+references: linear.app / Notion
+```
+
+→ `packages/brand-brief/proposals/<timestamp>-solstice.yaml` が出来る。
+
+##### (2) `/ds-plan` — 何を作るか計画
+
+```
+/ds-plan
+```
+
+入力例:
+
+```text
+直前で確定した Solstice Brief で進めて。
+- dark mode 必須なので、color.brand.* は light/dark 両方のスケールを必ず生成
+- コンポーネントは Button / TextField / Stack の 3 つでよい（最小セット）
+- ガイドラインは principles と accessibility の 2 本
+```
+
+→ `packages/brand-brief/proposals/<同名>.plan.md` が出来る。
+
+##### (3) `/ds-tasks` — 実行可能な task に分解
+
+```
+/ds-tasks
+```
+
+入力例:
+
+```text
+plan.md の内容を、propose_tokens / propose_component / propose_guideline の呼び出し列として順序付きで分解して。
+```
+
+→ `packages/brand-brief/proposals/<同名>.tasks.md` が出来る。
+
+##### (4) `/ds-implement` — MCP 経由で提案を生成（AI はここまで）
+
+```
+/ds-implement
+```
+
+入力例:
+
+```text
+tasks.md の上から順に propose を実行して。
+各 propose の validation.ok を確認し、true なら次へ。
+false の場合は additionalContext の修復指示に従って一度だけ自動修復、
+それでもダメならユーザーに判断を仰いで。
+```
+
+→ `packages/brand-brief/proposals/solstice/<id>/proposed/...` に **提案ファイルだけ** が書き出される。`packages/design-system/` への書き込みはまだ起きません。
+
+##### (5) 人間が承認（ここだけ AI には出来ない）
 
 ```bash
-npm run ds:approve -- packages/brand-brief/proposals/<slug>/<id>
-# → schema + WCAG + CSS リーク を再検証 → コピー → git add
+npm run ds:approve -- packages/brand-brief/proposals/solstice/<id>
+# → schema + WCAG + CSS leak 再検証 → packages/design-system/src/generated/solstice/ にコピー → git add
 ```
+
+承認後に `example-app` で動かす手順は B-4 を参照。
 
 #### B-2. VS Code で動かす
 
