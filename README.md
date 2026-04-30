@@ -133,15 +133,14 @@ AI が `get_components` → `get_component { name: "Button" }` → `get_color_to
 
 ### B. Brief から DS を AI に作らせる（新モード）
 
-事前準備として MCP Inspector を使うのが一番早いです。両 MCP を別ターミナルで並行起動できます（ポートは衝突しないよう分離済み: read=6274/6277, author=6284/6287）:
+`/ds-specify` → `/ds-plan` → `/ds-tasks` → `/ds-implement` の Spec-driven な流れで Brief から提案を生成し、人間が `npm run ds:approve` で `packages/design-system/` に反映する形になります。下記 4 つの動かし方を必要に応じて選んでください:
 
-```bash
-# ターミナル 1: ds-read を Inspector で叩く
-npm run inspect:read-mcp
+- **B-1**: CLI で動かす（Copilot CLI）— 通常はこれ
+- **B-2**: VS Code で動かす（Copilot Chat Agent モード）
+- **B-3**: Brief を直接渡す（対話を飛ばして CLI 単体で synth / check）
+- **B-4**: `ds:approve` した結果を `example-app` で試す
 
-# ターミナル 2: ds-author を Inspector で叩く
-npm run inspect:author-mcp
-```
+> MCP の挙動をスキーマレベルで生確認したいときは `npm run inspect:read-mcp` / `npm run inspect:author-mcp`（§6 参照）。通常のクイックスタートには不要です。
 
 #### B-1. CLI で動かす（Copilot CLI / `gh copilot`）
 
