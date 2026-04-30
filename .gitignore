@@ -6,3 +6,11 @@ storybook-static/
 .env
 .env.local
 *.tsbuildinfo
+
+# Brand Brief proposal artifacts.
+# Everything under proposals/ is regenerable: timestamped dirs are written by
+# ds-author MCP on every run, and curated <slug>/ dirs (brief/plan/tasks) are
+# AI-authored throwaway specs. Only the README is tracked as documentation.
+packages/brand-brief/proposals/*
+!packages/brand-brief/proposals/README.md
+
