@@ -131,4 +131,4 @@ const session = await joinSession({
   },
 });
 
-session.log("ds-guardrail extension ready (Phase 2: postToolUse → ds-check, tokens + components).");
+session.log("ds-guardrail extension ready (postToolUse → ds-check, tokens + components).");

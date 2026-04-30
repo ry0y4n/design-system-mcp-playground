@@ -194,7 +194,7 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 | Tool                | 入力                                         | 役割                                                                           |
 | ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
 | `propose_tokens`    | `briefPath`                                  | Brief を読み、全トークンを決定論的に合成 → `proposals/<slug>/<id>/` に書き出す |
-| `propose_component` | `briefPath`, `name`, `variants[]`, `sizes[]` | 該当 Brief で Button を生成（テンプレ）。AI の自由度は variants/sizes 選択のみ |
+| `propose_component` | `briefPath`, `name`, `variants?`, `sizes?` | 該当 Brief で `name` のコンポーネントを決定論テンプレから生成。受理される `name`: Button / TextField / Stack。AI の自由度は variants/sizes 選択のみ |
 | `list_proposals`    | なし                                         | 既存の提案一覧を返す                                                           |
 
 **重要**: `ds-author-mcp` には **approve / write / delete に相当するツールが存在しません**。書き出すのは `packages/brand-brief/proposals/` 配下のみで、`packages/design-system/` への反映は人間が `npm run ds:approve` を実行して初めて起こります。
@@ -208,7 +208,7 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 | **Agent allowlist**             | AI が `bash`/`edit`/`create` を呼べない（構造的不可能）                  | `.github/agents/design-system-architect.md`       |
 | **MCP の役割分離**              | 書く側 (ds-author) は提案ディレクトリにしか書けない                      | `packages/ds-author-mcp/` に approve tool が無い  |
 | **決定論的 synth**              | 色・余白・タイポは LLM ではなく OKLCH/比率/テーブルで計算                | `packages/ds-author-mcp/src/synth/`               |
-| **コンポーネント・テンプレ**    | TSX は固定テンプレ生成。LLM の自由度は variants/sizes のみ               | `packages/ds-author-mcp/src/components/button.ts` |
+| **コンポーネント・テンプレ**    | TSX は固定テンプレ生成。LLM の自由度は variants/sizes のみ               | `packages/ds-author-mcp/src/components/{button,textField,stack}.ts` |
 | **WCAG 検証 (二重)**            | propose 時 + approve 時に role-pair contrast を再チェック                | `packages/ds-author-mcp/src/validators/`          |
 | **ds-approve の path 白リスト** | 提案の `manifest.changes[].to` は `packages/design-system/` 配下のみ許可 | `packages/brand-brief/bin/ds-approve.mjs`         |
 | **ds-guardrail Hook**           | postToolUse で禁止パスへの読み書きを検知し追加検証                       | `.github/extensions/ds-guardrail/extension.mjs`   |
@@ -385,7 +385,7 @@ B モード（Brief 起点）まで持ち込むなら、追加で:
 ## 9. スコープ外（将来の拡張余地）
 
 - **Figma 連携**: Storybook を SSoT、Figma は探索・索引に振る運用（`@storybook/addon-designs` / Storybook Connect で双方向リンク）。
-- **コンポーネントの拡張**: 現在 `propose_component` は Button のみ。TextField / Select / Modal などへ拡張。
+- **コンポーネントの拡張**: 現在 `propose_component` は Button / TextField / Stack の 3 種を受理。Select / Modal / Card などへ拡張するには `packages/ds-author-mcp/src/components/` に generator を追加し registry に登録する。
 - **リモート MCP / 認証**: 社内共通サーバーとして配るなら HTTP/SSE + auth。
 - **インクリメンタル更新**: ファイル監視で変更時のみ再ロード。
 - **Brief の対話 UI**: `/ds-specify` を CLI/Chat 以外にも Web UI として提供。

@@ -27,8 +27,12 @@ import { tokensToCss } from "./synth/tokensCss.js";
 import { fontStackFor } from "./synth/typography.js";
 import { buildProvenance } from "./synth/provenance.js";
 import { hashBrief } from "./util/briefSha.js";
-import { generateComponent } from "./components/button.js";
 import { generateGuideline, GUIDELINE_NAMES } from "./guidelines/index.js";
+import {
+    KNOWN_COMPONENT_NAMES,
+    generateComponentFiles,
+    validateComponentSpec,
+} from "./components/index.js";
 import { runAllValidators, formatReport } from "./validators/index.js";
 
 function jsonContent(obj: unknown) {
@@ -164,7 +168,7 @@ async function main() {
         {
             title: "Propose a deterministically-generated component",
             description:
-                'Generate a component package (TSX + module.css + stories + spec + index + scoped tokens.css) under packages/design-system/src/generated/<briefSlug>/<Name>/. The TSX/CSS are produced from a fixed template — the AI\'s only freedom is choosing variants and sizes. Phase 2 supports name="Button" only. Output is written as a proposal under packages/brand-brief/proposals/<slug>/<id>/. A human must run `npm run ds:approve` to apply.',
+                `Generate a component package (TSX + module.css + stories + spec + index + scoped tokens.css) under packages/design-system/src/generated/<briefSlug>/<Name>/. The TSX/CSS are produced from a fixed template — the AI's only freedom is choosing variants and sizes from each component's allow-list. Allowed component names: ${KNOWN_COMPONENT_NAMES.join(", ")}. Each generator declares its own required axes; invalid input is rejected with a message listing allowed values (e.g. Stack does not accept 'sizes'). Output is written as a proposal under packages/brand-brief/proposals/<slug>/<id>/. A human must run \`npm run ds:approve\` to apply.`,
             inputSchema: {
                 briefPath: z
                     .string()
@@ -172,19 +176,21 @@ async function main() {
                 name: z
                     .string()
                     .describe(
-                        "Component name (PascalCase). Phase 2: must be 'Button'.",
+                        `Component name (PascalCase). One of: ${KNOWN_COMPONENT_NAMES.join(", ")}.`,
                     ),
                 variants: z
                     .array(z.string())
                     .min(1)
+                    .optional()
                     .describe(
-                        "Ordered list of variants. Must include 'primary'. Allowed: primary, secondary, ghost, danger.",
+                        "Ordered list of variants. The first item becomes the default. Each generator has its own allow-list (e.g. Button: primary*, secondary, ghost, danger; TextField: outline*, filled, underline; Stack: vertical*, horizontal). Required for Button/TextField/Stack.",
                     ),
                 sizes: z
                     .array(z.string())
                     .min(1)
+                    .optional()
                     .describe(
-                        "Ordered list of sizes. Must include 'md'. Allowed: sm, md, lg.",
+                        "Ordered list of sizes. Allowed: sm, md, lg (must include 'md') for Button/TextField. Stack does not accept 'sizes' — omit it.",
                     ),
             },
         },
@@ -213,21 +219,17 @@ async function main() {
             const brief = loaded.brief;
             const slug = brief.meta.slug ?? brief.meta.name;
 
-            // Synth fresh tokens so the component proposal is self-contained.
-            const tokens = synthesizeTokens(brief);
-            const css = tokensToCss(tokens, {
-                fontStack: fontStackFor(brief),
-                scope: `[data-brief="${slug}"]`,
-            });
+            const componentSpec = {
+                briefSlug: slug,
+                name,
+                variants,
+                sizes,
+            };
 
-            let componentFiles;
+            // Fail-fast: validate the component spec BEFORE running token synth
+            // so the AI sees a structural error without paying the synth cost.
             try {
-                componentFiles = generateComponent({
-                    briefSlug: slug,
-                    name,
-                    variants,
-                    sizes,
-                });
+                validateComponentSpec(componentSpec);
             } catch (e) {
                 return {
                     isError: true,
@@ -239,6 +241,15 @@ async function main() {
                     ],
                 };
             }
+
+            // Synth fresh tokens so the component proposal is self-contained.
+            const tokens = synthesizeTokens(brief);
+            const css = tokensToCss(tokens, {
+                fontStack: fontStackFor(brief),
+                scope: `[data-brief="${slug}"]`,
+            });
+
+            const componentFiles = generateComponentFiles(componentSpec);
 
             const tokensJsonRel = `packages/design-system/src/generated/${slug}/tokens.json`;
             const tokensCssRel = `packages/design-system/src/generated/${slug}/tokens.css`;
@@ -278,7 +289,11 @@ async function main() {
                 briefPath,
                 briefSlug: slug,
                 briefVersion: brief.meta.version,
-                component: { name, variants, sizes },
+                component: {
+                    name,
+                    variants: variants ?? [],
+                    sizes: sizes ?? [],
+                },
                 generator: "ds-author-mcp",
                 synthVersion: tokens.meta.synthVersion,
                 briefSha,

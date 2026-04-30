@@ -4,7 +4,7 @@
  * Produces a complete component package (TSX + module.css + stories + spec + index)
  * from a fixed template, parameterised by:
  *   - briefSlug   : used in import paths and headers
- *   - name        : PascalCase component name (always "Button" for Phase 2)
+ *   - name        : PascalCase component name (must be "Button")
  *   - variants    : ordered list, MUST include "primary"
  *   - sizes       : ordered list, MUST include "md"
  *
@@ -12,19 +12,13 @@
  * and sizes to declare. CSS values are exclusively `var(--token-*)` references —
  * `ds:check:tokens` enforces this invariant.
  */
-export interface ComponentSpec {
-  briefSlug: string;
-  name: string;
-  variants: string[];
-  sizes: string[];
-}
+import type {
+  ComponentGenerator,
+  ComponentSpec,
+  GeneratedFile,
+} from "./types.js";
 
-export interface GeneratedFile {
-  /** Path relative to the repo root. */
-  path: string;
-  contents: string;
-  type: "create" | "replace";
-}
+export type { ComponentSpec, GeneratedFile } from "./types.js";
 
 const KNOWN_VARIANTS: Record<
   string,
@@ -79,22 +73,34 @@ const KNOWN_SIZES: Record<
 
 function ensureKnown(spec: ComponentSpec) {
   if (spec.name !== "Button") {
-    throw new Error(`Phase 2 only supports name="Button" (got ${spec.name})`);
+    throw new Error(`buttonGenerator only handles name="Button" (got ${spec.name})`);
   }
-  if (!spec.variants.includes("primary")) {
+  const variants = spec.variants ?? [];
+  const sizes = spec.sizes ?? [];
+  if (variants.length === 0) {
+    throw new Error(
+      `Button requires non-empty 'variants'. Allowed: ${Object.keys(KNOWN_VARIANTS).join(", ")} (must include "primary").`
+    );
+  }
+  if (sizes.length === 0) {
+    throw new Error(
+      `Button requires non-empty 'sizes'. Allowed: ${Object.keys(KNOWN_SIZES).join(", ")} (must include "md").`
+    );
+  }
+  if (!variants.includes("primary")) {
     throw new Error(`variants must include "primary"`);
   }
-  if (!spec.sizes.includes("md")) {
+  if (!sizes.includes("md")) {
     throw new Error(`sizes must include "md"`);
   }
-  for (const v of spec.variants) {
+  for (const v of variants) {
     if (!(v in KNOWN_VARIANTS)) {
       throw new Error(
         `Unknown variant "${v}". Allowed: ${Object.keys(KNOWN_VARIANTS).join(", ")}`
       );
     }
   }
-  for (const s of spec.sizes) {
+  for (const s of sizes) {
     if (!(s in KNOWN_SIZES)) {
       throw new Error(
         `Unknown size "${s}". Allowed: ${Object.keys(KNOWN_SIZES).join(", ")}`
@@ -103,7 +109,13 @@ function ensureKnown(spec: ComponentSpec) {
   }
 }
 
-function tsxFile(spec: ComponentSpec): string {
+/**
+ * Internal resolved spec — `validate(spec)` guarantees variants & sizes are
+ * non-empty, so all template helpers below can rely on this narrower shape.
+ */
+type ResolvedSpec = ComponentSpec & { variants: string[]; sizes: string[] };
+
+function tsxFile(spec: ResolvedSpec): string {
   const variantUnion = spec.variants.map((v) => `"${v}"`).join(" | ");
   const sizeUnion = spec.sizes.map((s) => `"${s}"`).join(" | ");
   const defaultVariant = spec.variants[0];
@@ -165,7 +177,7 @@ export const ${spec.name} = forwardRef<HTMLButtonElement, ${spec.name}Props>(fun
 `;
 }
 
-function moduleCssFile(spec: ComponentSpec): string {
+function moduleCssFile(spec: ResolvedSpec): string {
   const lines: string[] = [];
   const baseClass = spec.name.toLowerCase();
   lines.push(
@@ -230,7 +242,7 @@ function moduleCssFile(spec: ComponentSpec): string {
   return lines.join("\n");
 }
 
-function storiesFile(spec: ComponentSpec): string {
+function storiesFile(spec: ResolvedSpec): string {
   const variantList = spec.variants.map((v) => `"${v}"`).join(", ");
   const sizeList = spec.sizes.map((s) => `"${s}"`).join(", ");
   const defSize = spec.sizes.includes("md") ? "md" : spec.sizes[0];
@@ -278,7 +290,7 @@ ${spec.sizes.map((s) => `      <${spec.name} size="${s}">${s}</${spec.name}>`).j
 `;
 }
 
-function specMd(spec: ComponentSpec): string {
+function specMd(spec: ResolvedSpec): string {
   return `# ${spec.name} (${spec.briefSlug})
 
 Generated from Brand Brief \`${spec.briefSlug}\` by \`ds-author-mcp\`.
@@ -296,7 +308,7 @@ This component MUST only reference design tokens via CSS custom properties
 `;
 }
 
-function indexTs(spec: ComponentSpec): string {
+function indexTs(spec: ResolvedSpec): string {
   return `export { ${spec.name} } from "./${spec.name}.js";
 export type { ${spec.name}Props, ${spec.name}Variant, ${spec.name}Size } from "./${spec.name}.js";
 `;
@@ -304,12 +316,23 @@ export type { ${spec.name}Props, ${spec.name}Variant, ${spec.name}Size } from ".
 
 export function generateComponent(spec: ComponentSpec): GeneratedFile[] {
   ensureKnown(spec);
-  const dir = `packages/design-system/src/generated/${spec.briefSlug}/${spec.name}`;
+  const resolved = spec as ResolvedSpec;
+  const dir = `packages/design-system/src/generated/${resolved.briefSlug}/${resolved.name}`;
   return [
-    { path: `${dir}/${spec.name}.tsx`, contents: tsxFile(spec), type: "replace" },
-    { path: `${dir}/${spec.name}.module.css`, contents: moduleCssFile(spec), type: "replace" },
-    { path: `${dir}/${spec.name}.stories.tsx`, contents: storiesFile(spec), type: "replace" },
-    { path: `${dir}/spec.md`, contents: specMd(spec), type: "replace" },
-    { path: `${dir}/index.ts`, contents: indexTs(spec), type: "replace" },
+    { path: `${dir}/${resolved.name}.tsx`, contents: tsxFile(resolved), type: "replace" },
+    { path: `${dir}/${resolved.name}.module.css`, contents: moduleCssFile(resolved), type: "replace" },
+    { path: `${dir}/${resolved.name}.stories.tsx`, contents: storiesFile(resolved), type: "replace" },
+    { path: `${dir}/spec.md`, contents: specMd(resolved), type: "replace" },
+    { path: `${dir}/index.ts`, contents: indexTs(resolved), type: "replace" },
   ];
 }
+
+/**
+ * Registry-facing generator. Used by `components/index.ts` to dispatch
+ * `propose_component({ name: "Button", ... })`.
+ */
+export const buttonGenerator: ComponentGenerator = {
+  name: "Button",
+  validate: ensureKnown,
+  generate: generateComponent,
+};
