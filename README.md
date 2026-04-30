@@ -102,6 +102,17 @@ npm run build           # 全 workspace をビルド
 
 これで `packages/{ds-read-mcp,ds-author-mcp}/dist/` が用意され、VS Code で開けば両 MCP が Copilot Chat (Agent モード) に自動認識されます。
 
+#### Copilot CLI から MCP を使う場合
+
+リポジトリ直下の `.mcp.json` に両 MCP の登録が入っています。**`args` の絶対パスは作者環境のもの**なので、各自のクローン先に合わせて書き換えてください:
+
+```bash
+# クローン直後に一度だけ
+sed -i.bak "s|/home/rhyakuta/codes/design-system-mcp-playground|$(pwd)|g" .mcp.json && rm .mcp.json.bak
+```
+
+その後 `copilot` を起動するか、起動中なら `/mcp` で再接続すれば `ds-read` / `ds-author` が利用可能になります。
+
 ### A. 既存 DS を AI に使わせる（元記事の体験）
 
 ```bash

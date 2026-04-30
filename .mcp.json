@@ -1,0 +1,18 @@
+{
+    "mcpServers": {
+        "ds-read": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "/home/rhyakuta/codes/design-system-mcp-playground/packages/ds-read-mcp/dist/index.js"
+            ]
+        },
+        "ds-author": {
+            "type": "stdio",
+            "command": "node",
+            "args": [
+                "/home/rhyakuta/codes/design-system-mcp-playground/packages/ds-author-mcp/dist/index.js"
+            ]
+        }
+    }
+}
