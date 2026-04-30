@@ -19,8 +19,7 @@
     "ds:validate": "npm run validate --workspace @design-system-mcp-playground/brand-brief --",
     "ds:approve": "npm run approve --workspace @design-system-mcp-playground/brand-brief --",
     "ds:synth": "npm run synth --workspace @design-system-mcp-playground/ds-author-mcp --",
-    "ds:check": "npm run check --workspace @design-system-mcp-playground/ds-author-mcp --",
-    "sync:vscode": "node scripts/sync-vscode.mjs"
+    "ds:check": "npm run check --workspace @design-system-mcp-playground/ds-author-mcp --"
   },
   "devDependencies": {
     "typescript": "^5.6.3"

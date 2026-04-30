@@ -9,10 +9,10 @@ Ubie の [デザインシステムを MCP サーバー化した話](https://zenn
 
 このリポジトリには **2 つの体験** が同居しています:
 
-| モード             | 入力                                     | 出力                                          | 主な MCP                           |
-| ------------------ | ---------------------------------------- | --------------------------------------------- | ---------------------------------- |
-| **A. 読むモード**  | 「このフォームを作って」                 | DS 準拠の React コード                        | `ds-read-mcp`                      |
-| **B. 作るモード**  | Brand Brief（設計思想・ブランドカラー）  | デザインシステム（tokens / Button / 来歴メタ） | `ds-author-mcp` + 人間の approve   |
+| モード            | 入力                                    | 出力                                           | 主な MCP                         |
+| ----------------- | --------------------------------------- | ---------------------------------------------- | -------------------------------- |
+| **A. 読むモード** | 「このフォームを作って」                | DS 準拠の React コード                         | `ds-read-mcp`                    |
+| **B. 作るモード** | Brand Brief（設計思想・ブランドカラー） | デザインシステム（tokens / Button / 来歴メタ） | `ds-author-mcp` + 人間の approve |
 
 A は元記事と同じ「AI に既存 DS を正確に渡す」体験。B はその DS 自体を AI に Brief から生成させる新しい体験で、**Spec-driven**（specify → plan → tasks → implement）と **決定論的 synth** と **人間専用の approve ゲート** を組み合わせて、AI に「危険なレベルの自由度」を与えずに DS を立ち上げられることを示します。
 
@@ -82,11 +82,9 @@ design-system-mcp-playground/
 │   │   └── ds-{specify,plan,tasks,implement}/SKILL.md
 │   ├── agents/
 │   │   └── design-system-architect.md   # ★ 構造的 allowlist（edit/bash なし）
-│   ├── extensions/
-│   │   └── ds-guardrail/       # postToolUse フックで auto-repair / 検証
-│   └── prompts/                # VS Code Copilot Chat の slash-command（自動生成）
+│   └── extensions/
+│       └── ds-guardrail/       # postToolUse フックで auto-repair / 検証
 │
-├── scripts/sync-vscode.mjs     # Skill → VS Code prompt の派生生成器
 ├── .vscode/mcp.json            # ds-read + ds-author の両サーバー登録済み
 └── docs/how-it-works.md        # 元記事レイヤーの仕組み解説
 ```
@@ -153,13 +151,7 @@ npm run ds:approve -- packages/brand-brief/proposals/<slug>/<id>
 
 #### B-2. VS Code で動かす
 
-`.vscode/mcp.json` で両 MCP が登録済み。Copilot Chat を Agent モードにし、`/ds-specify` ... の各 prompt（`.github/prompts/` の派生ファイル）を順に投げれば同じフローが走ります。Skill (CLI 真) を編集したら:
-
-```bash
-npm run sync:vscode
-```
-
-を実行すると `.github/prompts/*.prompt.md` が再生成されます（CLI のツール名 → VS Code 形式に翻訳）。
+`.vscode/mcp.json` で両 MCP が登録済み。Copilot Chat を Agent モードにし、`/ds-specify` ... の各 Skill（`.github/skills/` 配下）を順に投げれば同じフローが走ります。VS Code Copilot Chat は Agent Skills をネイティブサポートしているため、CLI と同じ `SKILL.md` がそのまま読み込まれます。
 
 #### B-3. Brief を直接渡す（人間が一気通貫させる）
 
@@ -181,17 +173,17 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 
 ### 3.1 `ds-read-mcp` — ds-read（読むモード）
 
-| Tool                    | 入力              | 役割                                                                                                  |
-| ----------------------- | ----------------- | ----------------------------------------------------------------------------------------------------- |
-| `get_briefs`            | なし              | ds-author-mcp が生成した Brand Brief 一覧（slug / version / generatedAt）                             |
-| `get_components`        | `brief?`          | コンポーネント名・概要・タグ一覧。`brief` 指定で生成版を返す                                          |
-| `get_component`         | `name`, `brief?`  | 指定コンポーネントの README（props / examples / tokens / related）                                   |
-| `get_color_tokens`      | `brief?`          | カラートークン。`brief` 指定で light/dark role pair を平坦化                                          |
-| `get_radius_tokens`     | `brief?`          | 角丸トークン                                                                                          |
-| `get_typography_tokens` | `brief?`          | 文字サイズ・行間・weight                                                                              |
-| `get_spacing_tokens`    | `brief?`          | 余白トークン                                                                                          |
-| `get_icons`             | `query?`          | アイコン一覧（SVG ソースつき）。クエリで部分一致フィルタ                                              |
-| `explain_token`         | `brief`, `path`   | 指定トークンが Brief のどのフィールド由来かを返す（value / source / input / derivation + briefSha）   |
+| Tool                    | 入力             | 役割                                                                                                |
+| ----------------------- | ---------------- | --------------------------------------------------------------------------------------------------- |
+| `get_briefs`            | なし             | ds-author-mcp が生成した Brand Brief 一覧（slug / version / generatedAt）                           |
+| `get_components`        | `brief?`         | コンポーネント名・概要・タグ一覧。`brief` 指定で生成版を返す                                        |
+| `get_component`         | `name`, `brief?` | 指定コンポーネントの README（props / examples / tokens / related）                                  |
+| `get_color_tokens`      | `brief?`         | カラートークン。`brief` 指定で light/dark role pair を平坦化                                        |
+| `get_radius_tokens`     | `brief?`         | 角丸トークン                                                                                        |
+| `get_typography_tokens` | `brief?`         | 文字サイズ・行間・weight                                                                            |
+| `get_spacing_tokens`    | `brief?`         | 余白トークン                                                                                        |
+| `get_icons`             | `query?`         | アイコン一覧（SVG ソースつき）。クエリで部分一致フィルタ                                            |
+| `explain_token`         | `brief`, `path`  | 指定トークンが Brief のどのフィールド由来かを返す（value / source / input / derivation + briefSha） |
 
 - `get_components` → `get_component` の二段構えは AI のコンテキスト節約のため。
 - `brief` 引数を省略すると **手書きの legacy DS** を返すので、A モードのデモはそのまま動きます。
@@ -199,11 +191,11 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 
 ### 3.2 `ds-author-mcp` — ds-author（作るモード）
 
-| Tool                | 入力                                       | 役割                                                                                |
-| ------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------- |
-| `propose_tokens`    | `briefPath`                                | Brief を読み、全トークンを決定論的に合成 → `proposals/<slug>/<id>/` に書き出す     |
-| `propose_component` | `briefPath`, `name`, `variants[]`, `sizes[]` | 該当 Brief で Button を生成（テンプレ）。AI の自由度は variants/sizes 選択のみ      |
-| `list_proposals`    | なし                                       | 既存の提案一覧を返す                                                                |
+| Tool                | 入力                                         | 役割                                                                           |
+| ------------------- | -------------------------------------------- | ------------------------------------------------------------------------------ |
+| `propose_tokens`    | `briefPath`                                  | Brief を読み、全トークンを決定論的に合成 → `proposals/<slug>/<id>/` に書き出す |
+| `propose_component` | `briefPath`, `name`, `variants[]`, `sizes[]` | 該当 Brief で Button を生成（テンプレ）。AI の自由度は variants/sizes 選択のみ |
+| `list_proposals`    | なし                                         | 既存の提案一覧を返す                                                           |
 
 **重要**: `ds-author-mcp` には **approve / write / delete に相当するツールが存在しません**。書き出すのは `packages/brand-brief/proposals/` 配下のみで、`packages/design-system/` への反映は人間が `npm run ds:approve` を実行して初めて起こります。
 
@@ -211,16 +203,16 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 
 ## 4. アーキテクチャの安全境界（なぜ AI が暴走しないか）
 
-| 防壁                          | 何を阻止しているか                                          | 場所                                                  |
-| ----------------------------- | ----------------------------------------------------------- | ----------------------------------------------------- |
-| **Agent allowlist**           | AI が `bash`/`edit`/`create` を呼べない（構造的不可能）     | `.github/agents/design-system-architect.md`           |
-| **MCP の役割分離**            | 書く側 (ds-author) は提案ディレクトリにしか書けない         | `packages/ds-author-mcp/` に approve tool が無い      |
-| **決定論的 synth**            | 色・余白・タイポは LLM ではなく OKLCH/比率/テーブルで計算   | `packages/ds-author-mcp/src/synth/`                   |
-| **コンポーネント・テンプレ**  | TSX は固定テンプレ生成。LLM の自由度は variants/sizes のみ  | `packages/ds-author-mcp/src/components/button.ts`     |
-| **WCAG 検証 (二重)**          | propose 時 + approve 時に role-pair contrast を再チェック   | `packages/ds-author-mcp/src/validators/`              |
-| **ds-approve の path 白リスト** | 提案の `manifest.changes[].to` は `packages/design-system/` 配下のみ許可 | `packages/brand-brief/bin/ds-approve.mjs`             |
-| **ds-guardrail Hook**         | postToolUse で禁止パスへの読み書きを検知し追加検証          | `.github/extensions/ds-guardrail/extension.mjs`       |
-| **per-token provenance**      | 全 token に出所メタを付与し、後から誰でも逆引き可能         | `tokens.provenance.json` + `explain_token` MCP        |
+| 防壁                            | 何を阻止しているか                                                       | 場所                                              |
+| ------------------------------- | ------------------------------------------------------------------------ | ------------------------------------------------- |
+| **Agent allowlist**             | AI が `bash`/`edit`/`create` を呼べない（構造的不可能）                  | `.github/agents/design-system-architect.md`       |
+| **MCP の役割分離**              | 書く側 (ds-author) は提案ディレクトリにしか書けない                      | `packages/ds-author-mcp/` に approve tool が無い  |
+| **決定論的 synth**              | 色・余白・タイポは LLM ではなく OKLCH/比率/テーブルで計算                | `packages/ds-author-mcp/src/synth/`               |
+| **コンポーネント・テンプレ**    | TSX は固定テンプレ生成。LLM の自由度は variants/sizes のみ               | `packages/ds-author-mcp/src/components/button.ts` |
+| **WCAG 検証 (二重)**            | propose 時 + approve 時に role-pair contrast を再チェック                | `packages/ds-author-mcp/src/validators/`          |
+| **ds-approve の path 白リスト** | 提案の `manifest.changes[].to` は `packages/design-system/` 配下のみ許可 | `packages/brand-brief/bin/ds-approve.mjs`         |
+| **ds-guardrail Hook**           | postToolUse で禁止パスへの読み書きを検知し追加検証                       | `.github/extensions/ds-guardrail/extension.mjs`   |
+| **per-token provenance**        | 全 token に出所メタを付与し、後から誰でも逆引き可能                      | `tokens.provenance.json` + `explain_token` MCP    |
 
 つまり「AI が直接 `packages/design-system/` を書き換える」ルートが **構造的に存在しない** のがこの PoC の肝です。
 
@@ -230,33 +222,32 @@ npm run ds:check -- packages/design-system/src/generated/aurora/tokens.json
 
 各層が責務をきれいに分けています:
 
-| 層            | 責務                                              | このリポジトリでの実装                                         |
-| ------------- | ------------------------------------------------- | -------------------------------------------------------------- |
-| **Skill**     | 「何を、どの順で」やるかの workflow（自然言語）   | `.github/skills/ds-{specify,plan,tasks,implement}/SKILL.md`    |
+| 層               | 責務                                            | このリポジトリでの実装                                           |
+| ---------------- | ----------------------------------------------- | ---------------------------------------------------------------- |
+| **Skill**        | 「何を、どの順で」やるかの workflow（自然言語） | `.github/skills/ds-{specify,plan,tasks,implement}/SKILL.md`      |
 | **Custom Agent** | AI に許可するツール集合（権限境界）             | `.github/agents/design-system-architect.md` (`tools:` allowlist) |
-| **MCP**       | 構造化された I/O（read / propose / explain）      | `ds-read-mcp`, `ds-author-mcp`                                  |
-| **Hooks**     | 横断的な検証・ログ・auto-repair                   | `.github/extensions/ds-guardrail/extension.mjs` (postToolUse)  |
-| **Human**     | 反映の最終ゲート（CI と同等の役割）               | `npm run ds:approve` (`packages/brand-brief/bin/ds-approve.mjs`) |
+| **MCP**          | 構造化された I/O（read / propose / explain）    | `ds-read-mcp`, `ds-author-mcp`                                   |
+| **Hooks**        | 横断的な検証・ログ・auto-repair                 | `.github/extensions/ds-guardrail/extension.mjs` (postToolUse)    |
+| **Human**        | 反映の最終ゲート（CI と同等の役割）             | `npm run ds:approve` (`packages/brand-brief/bin/ds-approve.mjs`) |
 
-Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生生成されます。
+Skill は CLI / VS Code Copilot Chat の両方から同じ `SKILL.md` が読み込まれます。
 
 ---
 
 ## 6. 主な npm scripts
 
-| コマンド                    | 役割                                                                                          |
-| --------------------------- | --------------------------------------------------------------------------------------------- |
-| `npm run build`             | 全 workspace をビルド                                                                         |
-| `npm run build:read-mcp`    | ds-read MCP のみビルド                                                                        |
-| `npm run build:author-mcp`  | ds-author MCP のみビルド                                                                      |
-| `npm run inspect:read-mcp`  | MCP Inspector で ds-read を対話的にテスト（port 6274/6277）                                   |
-| `npm run inspect:author-mcp`| MCP Inspector で ds-author を対話的にテスト（port 6284/6287、read と並行起動可）              |
-| `npm run storybook`         | デザインシステムの公式見本を起動                                                              |
-| `npm run ds:validate -- <brief.yaml>` | Brief を schema validation                                                          |
-| `npm run ds:synth -- <brief.yaml>`    | Brief から token を合成（CLI 単体実行）                                            |
-| `npm run ds:check -- <tokens.json>`   | tokens.json を schema + WCAG で検証                                                |
+| コマンド                               | 役割                                                                             |
+| -------------------------------------- | -------------------------------------------------------------------------------- |
+| `npm run build`                        | 全 workspace をビルド                                                            |
+| `npm run build:read-mcp`               | ds-read MCP のみビルド                                                           |
+| `npm run build:author-mcp`             | ds-author MCP のみビルド                                                         |
+| `npm run inspect:read-mcp`             | MCP Inspector で ds-read を対話的にテスト（port 6274/6277）                      |
+| `npm run inspect:author-mcp`           | MCP Inspector で ds-author を対話的にテスト（port 6284/6287、read と並行起動可） |
+| `npm run storybook`                    | デザインシステムの公式見本を起動                                                 |
+| `npm run ds:validate -- <brief.yaml>`  | Brief を schema validation                                                       |
+| `npm run ds:synth -- <brief.yaml>`     | Brief から token を合成（CLI 単体実行）                                          |
+| `npm run ds:check -- <tokens.json>`    | tokens.json を schema + WCAG で検証                                              |
 | `npm run ds:approve -- <proposal-dir>` | **人間専用**: 提案を `packages/design-system/` に反映                            |
-| `npm run sync:vscode`       | Skill から VS Code prompt files を再生成                                                      |
 
 ---
 
@@ -271,7 +262,7 @@ Skill は CLI 真。VS Code 用 prompt files は `npm run sync:vscode` で派生
 
 ### B モード（Brief から DS を作らせる）
 
-VS Code Copilot Chat を **Agent モード** にし、`.github/prompts/ds-*.prompt.md` の各 prompt を順に投げます。以下は「ダークファースト・ノートアプリ向け DS」を立ち上げる想定の **コピペで動くサンプル会話**（`packages/brand-brief/examples/aurora.brief.yaml` 相当を生成する流れ）。
+VS Code Copilot Chat を **Agent モード** にし、`.github/skills/ds-*/SKILL.md` の各 Skill を順に投げます。以下は「ダークファースト・ノートアプリ向け DS」を立ち上げる想定の **コピペで動くサンプル会話**（`packages/brand-brief/examples/aurora.brief.yaml` 相当を生成する流れ）。
 
 #### Step 1. `/ds-specify` — Brief を対話で固める
 
@@ -279,33 +270,51 @@ VS Code Copilot Chat を **Agent モード** にし、`.github/prompts/ds-*.prom
 
 ```text
 夜の集中を支える、静かで温度のあるノートアプリのデザインシステムを作りたい。
-名前は Aurora、slug は aurora、version 0.1.0。
 
-設計思想:
+meta:
+- name: Aurora
+- slug: aurora
+- version: 0.1.0
+
+philosophy:
 - mission: 夜の集中を支える、静かで温度のあるノートアプリ
 - principles:
   1. ユーザーの集中を奪わない（控えめなコントラスト、強い色は要所だけ）
   2. 暗所で長時間使っても疲れない（dark first、light も完全サポート）
   3. 行動を止めない（クリック数より「迷い時間」を減らす）
-- antiPrinciples: 装飾のための装飾 / 通知で関心を奪う
+- antiPrinciples:
+  - 装飾のための装飾
+  - 通知で関心を奪う
 
-ブランド:
-- primarySeed: #5B7FFF
-- accentSeed: #FFB86B
-- neutralBase: cool
-- typography: humanist-sans, scaleRatio 1.25
-- spacing: normal / radius: soft
-- tone: neutral × calm、落ち着いた書き手の隣にいる声色
+brand:
+- colors.primarySeed: #5B7FFF
+- colors.accentSeed: #FFB86B
+- colors.neutralBase: cool
+- typography.fontStackPreference: humanist-sans
+- typography.scaleRatio: 1.25
+- spacingScale: normal
+- radiusScale: soft
+- tone.formality: neutral
+- tone.energy: calm
+- tone.voice: 落ち着いた、書き手の隣にいるような声色
 
 audience:
 - primary: 夜にメモを書く 25–40 歳の知的労働者
 - secondary: ライター・研究者
-- WCAG AA、darkMode 必須、reducedMotion 尊重
+- accessibility.wcagLevel: AA
+- accessibility.darkMode: true
+- accessibility.reducedMotion: true
 
 constraints:
-- mustHave: dark mode は light と同等品質 / キーボードのみで全機能到達
-- mustNot: フラッシュするアニメ / success/info に強い赤
-- references: Linear, Notion
+- mustHave:
+  - dark mode は light と同等品質
+  - キーボードのみで全機能到達
+- mustNot:
+  - フラッシュするアニメーション
+  - success/info に強い赤
+- references:
+  - https://linear.app
+  - Notion
 ```
 
 > 期待結果: `packages/brand-brief/proposals/<timestamp>-aurora.yaml`（または同等パス）が **create** され、AI が次は `/ds-plan` を提案する。
@@ -313,8 +322,7 @@ constraints:
 #### Step 2. `/ds-plan` — 何を作るかの計画
 
 ```text
-/ds-plan packages/brand-brief/examples/aurora.brief.yaml
-で計画を立ててください。dark mode 必須なので、color.brand.* は light/dark 両方の
+/ds-plan 計画を立ててください。dark mode 必須なので、color.brand.* は light/dark 両方の
 スケールが要ります。コンポーネントは Button / TextField / Stack の最小 3 つでOK。
 ```
 
